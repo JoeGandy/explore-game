@@ -156,6 +156,84 @@ const App = () => {
     const tile = map[y][x];
 
     console.log(tile);
+    function getTile(tile, direction) {
+      let modifier = { x: 0, y: 0 };
+
+      switch (direction) {
+        case 'above':
+          modifier.x = -1;
+          break;
+        case 'aboveLeft':
+          modifier.x = -1;
+          modifier.y = -1;
+          break;
+        case 'aboveRight':
+          modifier.x = -1;
+          modifier.y = 1;
+          break;
+        case 'below':
+          modifier.x = 1;
+          break;
+        case 'belowLeft':
+          modifier.x = 1;
+          modifier.y = -1;
+          break;
+        case 'belowRight':
+          modifier.x = 1;
+          modifier.y = 1;
+          break;
+        case 'left':
+          modifier.y = -1;
+          break;
+        case 'right':
+          modifier.y = 1;
+          break;
+      }
+
+      if (typeof map[tile.coordinate.x + modifier.x] === 'undefined' || typeof map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y] === 'undefined') {
+        return null;
+      }
+
+      return map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y].type;
+    }
+
+
+
+
+    function getTilesAround(tile) {
+      const aboveTile = getTile(tile, 'above');
+      const aboveLeftTile = getTile(tile, 'aboveLeft');
+      const aboveRightTile = getTile(tile, 'aboveRight');
+      const belowTile = getTile(tile, 'below');
+      const belowLeftTile = getTile(tile, 'belowLeft');
+      const belowRightTile = getTile(tile, 'belowRight');
+      const leftTile = getTile(tile, 'left');
+      const rightTile = getTile(tile, 'right');
+
+      const matrix = [
+        [aboveLeftTile === tile.type, aboveTile === tile.type, aboveRightTile === tile.type],
+        [leftTile === tile.type, true, rightTile === tile.type],
+        [belowLeftTile === tile.type, belowTile === tile.type, belowRightTile === tile.type],
+      ];
+      return matrix;
+
+    }
+
+    function getEdgeTile(tile) {
+      const order = ['belowRight', 'below', 'belowLeft', 'left', 'aboveLeft', 'above', 'aboveRight', 'right'];
+      const bit = [1, 2, 4, 8, 16, 32, 64, 128];
+      let runningTotal = 0;
+      order.forEach(function (target, i) {
+        const targetTile = getTile(tile, target);
+        if (targetTile !== tile.type) {
+          runningTotal += bit[i];
+        }
+      });
+
+      return runningTotal;
+    }
+    console.log(getEdgeTile(tile))
+    console.log(getTilesAround(tile));
 
     const closestRoutes = tile?.extraInfo?.closest.map(
       (closest) => {

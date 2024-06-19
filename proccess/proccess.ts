@@ -3,7 +3,9 @@ import { TILES } from "./Classes/Tiles";
 
 var globalMercator = require('global-mercator');
 const geolib = require('geolib');
-var county = require('./counties/england/derbyshire.json');
+// var county = require('./geojson/england.json');
+
+var county = require('./geojson/counties/england/derbyshire.json');
 // var countyRivers = require('./counties/england/derbyshire-rivers.json');
 var PNG = require('pngjs2').PNG;
 var PF = require('pathfinding');
@@ -452,7 +454,7 @@ function postProccess() {
 
 
             if (map[y][x]?.allowDrawOver()) {
-                map[y][x] = new Tile(TILES.ROAD, y, x);
+                map[y][x] = new Tile(TILES.ROAD, x, y);
                 map = fillSquareAround(map, y, x, AREA_TO_FILL_AROUND_PATH);
             }
         })

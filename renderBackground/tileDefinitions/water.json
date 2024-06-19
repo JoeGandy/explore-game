@@ -1,0 +1,54 @@
+{
+    "mainTile": 283,
+    "targetTile": 405,
+    "inwards": {
+        "topLeft": 242,
+        "top": 243,
+        "topRight": 244,
+        "right": 284,
+        "bottomRight": 324,
+        "bottom": 323,
+        "bottomLeft": 322,
+        "left": 282
+    },
+    "out": {
+        "topLeft": 362,
+        "topRight": 363,
+        "bottomRight": 403,
+        "bottomLeft": 402
+    },
+    "end": {
+        "top": 831,
+        "left": 832,
+        "bottom": 833,
+        "right": 834,
+        "diagonalLeft": 874,
+        "diagonalRight": 875
+    },
+    "narrow": {
+        "topLeft": 951,
+        "topRight": 950,
+        "bottomRight": 990,
+        "bottomLeft": 991,
+        "horizontal": 911,
+        "vertical": 910,
+        "topT": 870,
+        "leftT": 871,
+        "bottomT": 872,
+        "rightT": 873,
+        "narrowTDown": 992, 
+        "narrowTUp": 993,
+        "narrowTRight": 994,
+        "narrowTLeft": 995
+    },
+    "cornerToNarrow": {
+        "topFromRight": 912,
+        "rightFromBottom": 913,
+        "leftFromBottom": 914,
+        "topFromLeft": 915,
+        "leftFromTop": 952,
+        "bottomFromLeft": 953,
+        "bottomFromRight": 954,
+        "rightFromTop": 955
+    }
+}

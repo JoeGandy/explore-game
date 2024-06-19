@@ -2,6 +2,9 @@ const { createCanvas, loadImage } = require("canvas");
 const fs = require("fs");
 const map = require("./raw-data.json");
 const globals = require("../global-constants");
+const getEdgeTile = require("./getEdgeTile");
+const waterTileDefintion = require("./tileDefinitions/water.json");
+const roadTileDefintion = require("./tileDefinitions/road.json");
 
 // Dimensions for the image
 const width = map[0].length * globals.TILE_SIZE;
@@ -20,217 +23,16 @@ const context = canvas.getContext("2d");
 context.fillStyle = "#764abc";
 context.fillRect(0, 0, canvasWidth, canvasHeight);
 
-function getTile(tile, direction) {
-    let modifier = { x: 0, y: 0 };
 
-    switch (direction) {
-        case 'above':
-            modifier.x = 1;
-            break;
-        case 'aboveLeft':
-            modifier.x = 1;
-            modifier.y = -1;
-            break;
-        case 'aboveRight':
-            modifier.x = 1;
-            modifier.y = 1;
-            break;
-        case 'below':
-            modifier.x = -1;
-            break;
-        case 'belowLeft':
-            modifier.x = -1;
-            modifier.y = -1;
-            break;
-        case 'belowRight':
-            modifier.x = -1;
-            modifier.y = 1;
-            break;
-        case 'left':
-            modifier.y = -1;
-            break;
-        case 'right':
-            modifier.y = 1;
-            break;
-    }
-
-    if (typeof map[tile.coordinate.x + modifier.x] === 'undefined' || typeof map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y] === 'undefined') {
-        return null;
-    }
-
-    return map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y].type;
-}
-
-function arrayMatch(a1, a2) {
-    return JSON.stringify(a1) === JSON.stringify(a2);
-}
-
-function rotateClockwise(a) {
-    var n = a.length;
-    for (var i = 0; i < n / 2; i++) {
-        for (var j = i; j < n - i - 1; j++) {
-            var tmp = a[i][j];
-            a[i][j] = a[n - j - 1][i];
-            a[n - j - 1][i] = a[n - i - 1][n - j - 1];
-            a[n - i - 1][n - j - 1] = a[j][n - i - 1];
-            a[j][n - i - 1] = tmp;
-        }
-    }
-    return a;
-}
-
-function getTilesAround(tile){
-    const aboveTile = getTile(tile, 'above');
-    const aboveLeftTile = getTile(tile, 'aboveLeft');
-    const aboveRightTile = getTile(tile, 'aboveRight');
-    const belowTile = getTile(tile, 'below');
-    const belowLeftTile = getTile(tile, 'belowLeft');
-    const belowRightTile = getTile(tile, 'belowRight');
-    const leftTile = getTile(tile, 'left');
-    const rightTile = getTile(tile, 'right');
-
-    const matrix = [
-        [aboveLeftTile === tile.type, aboveTile === tile.type, aboveRightTile === tile.type],
-        [leftTile === tile.type, true, rightTile === tile.type],
-        [belowLeftTile === tile.type, belowTile === tile.type, belowRightTile === tile.type],
-    ];
-
-    return matrix;
-
-}
-
-function getEdgeTile(tile, edgeDefinition) {
-    const matrix = getTilesAround(tile);
-
-    if (
-        arrayMatch(matrix,
-            [
-                [true, true, true],
-                [true, true, true],
-                [true, true, true],
-            ])
-    ) {
-        return { id: edgeDefinition.middle };
-    }
-    let arrays;
-
-    //up/down/left/right edges 
-    arrays = [
-        [
-            [true, true, true],
-            [true, true, true],
-            [true, false, false]
-        ],
-        [
-            [true, true, true],
-            [true, true, true],
-            [false, false, false],
-        ],
-        [
-            [true, true, true],
-            [true, true, true],
-            [false, false, true],
-        ]
-    ];
-    for (let r = 0; r < 4; r++) {
-        if (r > 0) {
-            arrays = arrays.map((array) => rotateClockwise(array));
-        }
-
-        if (
-            arrays.find((array) => arrayMatch(matrix, array))
-        ) {
-            return { id: edgeDefinition.edge[r] };
-        }
-    }
-
-
-    //inner corners
-    arrays = [
-        [
-            [true, true, true],
-            [false, true, true],
-            [false, false, true]
-        ],
-        [
-            [false, true, true],
-            [false, true, true],
-            [false, false, false]
-        ],
-        [
-            [true, true, true],
-            [false, true, true],
-            [false, false, false]
-        ],
-        [
-            [false, true, true],
-            [false, true, true],
-            [false, false, true]
-        ],
-    ];
-    for (let r = 0; r < 4; r++) {
-        if (r > 0) {
-            arrays = arrays.map((array) => rotateClockwise(array));
-        }
-
-        if (
-            arrays.find((array) => arrayMatch(matrix, array))
-        ) {
-            return { id: edgeDefinition.innerCorner[r] };
-        }
-    }
-    arrays = [
-        [
-            [true, true, true],
-            [true, true, true],
-            [false, true, true]
-        ],
-    ];
-    for (let r = 0; r < 4; r++) {
-        if (r > 0) {
-            arrays = arrays.map((array) => rotateClockwise(array));
-        }
-
-        if (
-            arrays.find((array) => arrayMatch(matrix, array))
-        ) {
-            return { id: edgeDefinition.ouoterCorner[r] };
-        }
-    }
-
-    //outer corners
-
-    return { id: 84 };
-}
-
-const landIds = [17, 17, 17, 17, 17, 17, 17, 17, 17, 131, 131, 131, 148, 148, 148, 147, 132, 149];
-const remoteLandIds = [147, 147, 132, 149, 147, 147, 132, 149, 131, 148, 17];
+const landIds = [405, 367, 407, 408];
+const remoteLandIds = [1215, 1177, 1178, 1217, 1218];
 function getTileXY(tile) {
     let id = null;
 
     switch (tile.type) {
         case 0: //WATER
-            id = getEdgeTile(tile, {
-                edge: {
-                    0: 81,
-                    1: 19,
-                    2: 1,
-                    3: 32
-                },
-                innerCorner: {
-                    0: 53,
-                    1: 37,
-                    2: 52,
-                    3: 82,
-                },
-                ouoterCorner: {
-                    0: 119,
-                    1: 5,
-                    2: 0,
-                    3: 80,
-                },
-                middle: 84,
-            }).id;
+            // https://www.boristhebrave.com/2021/11/14/classification-of-tilesets/
+            id = getEdgeTile(map, tile, waterTileDefintion);
             break;
         case 1: //LAND
             id = landIds[Math.floor(Math.random() * landIds.length)];
@@ -239,41 +41,42 @@ function getTileXY(tile) {
             id = remoteLandIds[Math.floor(Math.random() * remoteLandIds.length)];
             break;
         case 3: //ROAD
-            id = 25;
+            id = getEdgeTile(map, tile, roadTileDefintion);
             break;
         case 4: //PLACE
             switch (tile.extraInfo.properties.place) {
                 case 'hamlet':
-                    id = 176;
+                    id = 1001;
                     break;
                 case 'village':
-                    id = 128;
+                    id = 1001;
                     break;
                 case 'town':
-                    id = 128;
+                    id = 1001;
                     break;
                 case 'town':
-                    id = 128;
+                    id = 1001;
                     break;
                 case 'city':
-                    id = 178;
+                    id = 1001;
                     break;
                 case 'suburb':
-                    id = 177;
+                    id = 1001;
                     break;
             }
             break;
         default:
-            id = 128;
+            id = 161;
     }
 
     return {
-        x: Math.floor(id % 16) * globals.TILE_SIZE,
-        y: Math.floor(id / 16) * globals.TILE_SIZE,
+        x: Math.floor(id % 40) * globals.TILE_SIZE,
+        y: Math.floor(id / 40) * globals.TILE_SIZE,
     } //https://stackoverflow.com/questions/47951361/finding-x-y-based-off-of-index
 }
 
-loadImage("../spritemap.png").then((tileMap) => {
+loadImage("../spritemap-new.png").then((tileMap) => {
+    let image = 1;
     for (let hPiece = 0; hPiece < hPieces; hPiece++) {
         for (let vPiece = 0; vPiece < vPieces; vPiece++) {
             for (let y = 0; y < map.length; y++) {
@@ -300,7 +103,7 @@ loadImage("../spritemap.png").then((tileMap) => {
             }
             const buffer = canvas.toBuffer("image/png");
             fs.writeFileSync(`./output/background-${hPiece}-${vPiece}.png`, buffer);
-            console.log("\t|\tFile " + ((hPiece + 1) + (vPiece + 1)) + " of " + (hPieces * vPieces) + " created");
+            console.log("\t|\tFile " + (image++) + " of " + (hPieces * vPieces) + " created");
 
 
         }
