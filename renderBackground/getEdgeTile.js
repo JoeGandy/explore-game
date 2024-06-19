@@ -48,10 +48,14 @@ const debugTile = 786;
 // --+---+---
 // 4  | 2  | 1
 function getEdgeTile(map, tile, tileDefinition) {
-    const tileMap = getTilemapMapping(tileDefinition);
+    let mainTile = tileDefinition.mainTile;
+
+    if (Array.isArray(tileDefinition.mainTile)) {
+        mainTile = tileDefinition.mainTile[Math.floor(Math.random() * tileDefinition.mainTile.length)];
+    }
     const order = ['belowRight', 'below', 'belowLeft', 'left', 'aboveLeft', 'above', 'aboveRight', 'right'];
     const bit = [1, 2, 4, 8, 16, 32, 64, 128];
-    
+
     let runningTotal = 0;
 
     order.forEach(function (target, i) {
@@ -61,8 +65,10 @@ function getEdgeTile(map, tile, tileDefinition) {
         }
     });
 
-    if (typeof(tileMap[runningTotal]) === "undefined") {
-        console.log('[', tile.type ,']', runningTotal, 'does not have a tile');
+    const tileMap = getTilemapMapping({ ...tileDefinition, mainTile });
+
+    if (typeof (tileMap[runningTotal]) === "undefined") {
+        console.log('[', tile.type, ']', runningTotal, 'does not have a tile');
     }
 
     return tileMap[runningTotal] || debugTile;

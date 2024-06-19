@@ -23,7 +23,6 @@ const context = canvas.getContext("2d");
 context.fillStyle = "#764abc";
 context.fillRect(0, 0, canvasWidth, canvasHeight);
 
-
 const landIds = [405, 367, 407, 408];
 const remoteLandIds = [1215, 1177, 1178, 1217, 1218];
 function getTileXY(tile) {
