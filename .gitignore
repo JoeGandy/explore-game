@@ -1,0 +1,13 @@
+*/node_modules
+*/*.log
+
+proccess/graphs
+proccess/elevation_cache
+proccess/logs
+proccess/pbfs
+
+renderBackground/raw-*.json
+renderBackground/output
+
+
+game/public

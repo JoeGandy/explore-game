@@ -1,0 +1,14 @@
+{
+  "name": "CycleGame",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start:ors": "cd proccess && yarn ors",
+    "proccess": "cd proccess && yarn proccess",
+    "proccess-mv": "cp ./proccess/raw-data.json ./renderBackground/ && mv ./proccess/raw-data-known-routes.json ./game/src/assets/ && mv ./proccess/raw-data.json ./game/src/assets/ && cp ./proccess/raw-data-light.json ./renderBackground/ && mv ./proccess/raw-data-light.json ./game/src/assets/",
+    "draw": "cd renderBackground && yarn draw",
+    "draw-mv": "mv ./renderBackground/output/* ./game/public/assets/background/",
+    "full-pre": "yarn proccess && yarn proccess-mv && yarn draw && yarn draw-mv"
+  }
+}
