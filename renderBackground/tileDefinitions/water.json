@@ -11,6 +11,15 @@
         "bottomLeft": 100,
         "left": 89
     },
+    "cornerToNarrow": {
+        "topFromRight": 96,
+        "leftFromTop": 100,
+        "bottomFromLeft": 103,
+        "leftFromBottom": 96,
+        "bottomFromRight": 100,
+        "rightFromBottom": 99,
+        "rightFromTop": 103
+    },
     "out": {
         "topLeft": 102,
         "topRight": 101,
@@ -18,18 +27,20 @@
         "bottomLeft": 98
     },
     "end": {
-        "top": 8,
-        "left": 7,
-        "bottom": 8,
-        "right": 7
+        "top": 2,
+        "left": 2,
+        "bottom": 2,
+        "right": 2,
+        "diagonalLeft": 110,
+        "diagonalRight": 111
     },
     "narrow": {
         "topLeft": 9,
         "topRight": 12,
         "bottomRight": 11,
         "bottomLeft": 10,
-        "horizontal": 7,
-        "vertical": 8,
+        "horizontal": 2,
+        "vertical": 2,
         "topT": 94,
         "leftT": 92,
         "bottomT": 95,

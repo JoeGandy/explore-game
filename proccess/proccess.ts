@@ -1,5 +1,6 @@
 import { Tile } from "./Classes/Tile";
 import { TILES } from "./Classes/Tiles";
+import getTile from "../renderBackground/getTile";
 
 var globalMercator = require('global-mercator');
 const geolib = require('geolib');
@@ -289,47 +290,6 @@ function fill(x, y, type) {
     }
 }
 
-function getTile(tile, direction) {
-    let modifier = { x: 0, y: 0 };
-
-    switch (direction) {
-        case 'above':
-            modifier.x = 1;
-            break;
-        case 'aboveLeft':
-            modifier.x = 1;
-            modifier.y = -1;
-            break;
-        case 'aboveRight':
-            modifier.x = 1;
-            modifier.y = 1;
-            break;
-        case 'below':
-            modifier.x = -1;
-            break;
-        case 'belowLeft':
-            modifier.x = -1;
-            modifier.y = -1;
-            break;
-        case 'belowRight':
-            modifier.x = -1;
-            modifier.y = 1;
-            break;
-        case 'left':
-            modifier.y = -1;
-            break;
-        case 'right':
-            modifier.y = 1;
-            break;
-    }
-
-    if (typeof map[tile.coordinate.x + modifier.x] === 'undefined' || typeof map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y] === 'undefined') {
-        return null;
-    }
-
-    return map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y].type;
-}
-
 function arrayMatch(a1, a2) {
     return JSON.stringify(a1) === JSON.stringify(a2);
 }
@@ -465,8 +425,58 @@ function postProccess() {
                 map = fillSquareAround(map, y, x, AREA_TO_FILL_AROUND_PATH);
             }
         })
-
     })
+
+    console.log("\t|\tCleaning excess roads");
+    for (var y = 0; y < gridSizeHeight; y++) {
+        for (var x = 0; x < gridSizeWidth; x++) {
+            const tile = map[y][x];
+            if (
+                tile !== undefined &&
+                tile.type == TILES.ROAD
+            ) {
+                const rightTileType = getTile(map, tile, 'right'),
+                    belowTileType = getTile(map, tile, 'below'),
+                    belowRightTileType = getTile(map, tile, 'belowRight');
+
+                if (rightTileType === TILES.ROAD && belowTileType === TILES.ROAD && belowRightTileType === TILES.ROAD) {
+                    //currentTile
+                    if (getTile(map, tile, 'left') !== TILES.ROAD && getTile(map, tile, 'above') !== TILES.ROAD) {
+                        let { x, y } = tile.coordinate;
+                        console.log(x,y,'road deleted');
+                        map[x][y] = new Tile(TILES.LAND, y, x);
+                    }
+                    //rightTile
+                    // let modifier = { x: 0, y: 1 };
+                    // if (
+                    //     getTile(map, tile, 'right', modifier.x, modifier.y) !== TILES.ROAD &&
+                    //     getTile(map, tile, 'above', modifier.x, modifier.y) !== TILES.ROAD
+                    // ) {
+                    //     let { x, y } = tile.coordinate;
+                    //     x = x + modifier.x;
+                    //     y = y + modifier.y;
+                    //     console.log(x, y, 'road deleted');
+                    //     map[y][x] = new Tile(TILES.LAND, x, y);
+                    // }
+
+                    //belowTile
+
+
+                    //belowRightTile
+                }
+                //get 2x2 tiles that are all roads
+                // look round the edge of that 2x2
+                // X   |   X  |   X   |   X
+                // X   |   R  |   R   |   X
+                // X   |   R  |   R   |   X
+                // X   |   X  |   X   |   X
+
+                // go through each R, if it not adjacent to one on the edge, delete this road
+
+            }
+        }
+    }
+
 
 
     console.log("\t|\tIdentifiying places without road connections");

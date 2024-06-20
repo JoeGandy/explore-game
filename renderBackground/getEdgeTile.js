@@ -1,46 +1,6 @@
 const getTilemapMapping = require("./getTilemapMapping");
 const globals = require("../global-constants");
-
-function getTile(map, tile, direction) {
-    let modifier = { x: 0, y: 0 };
-
-    switch (direction) {
-        case 'above':
-            modifier.x = -1;
-            break;
-        case 'aboveLeft':
-            modifier.x = -1;
-            modifier.y = -1;
-            break;
-        case 'aboveRight':
-            modifier.x = -1;
-            modifier.y = 1;
-            break;
-        case 'below':
-            modifier.x = 1;
-            break;
-        case 'belowLeft':
-            modifier.x = 1;
-            modifier.y = -1;
-            break;
-        case 'belowRight':
-            modifier.x = 1;
-            modifier.y = 1;
-            break;
-        case 'left':
-            modifier.y = -1;
-            break;
-        case 'right':
-            modifier.y = 1;
-            break;
-    }
-
-    if (typeof map[tile.coordinate.x + modifier.x] === 'undefined' || typeof map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y] === 'undefined') {
-        return null;
-    }
-
-    return map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y].type;
-}
+const getTile = require("./getTile");
 
 function getKeyByValue(object, value) {
     return Object.keys(object).find(key => object[key] === value);
