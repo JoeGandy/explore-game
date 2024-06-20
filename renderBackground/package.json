@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "canvas": "^2.11.2"
+    "canvas": "^2.11.2",
+    "custom-env": "^2.0.2",
+    "dotenv": "^16.4.5"
   },
   "scripts": {
     "draw": "node draw.js"

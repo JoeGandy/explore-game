@@ -8,7 +8,15 @@
     "proccess": "cd proccess && yarn proccess",
     "proccess-mv": "cp ./proccess/raw-data.json ./renderBackground/ && mv ./proccess/raw-data-known-routes.json ./game/src/assets/ && mv ./proccess/raw-data.json ./game/src/assets/ && cp ./proccess/raw-data-light.json ./renderBackground/ && mv ./proccess/raw-data-light.json ./game/src/assets/",
     "draw": "cd renderBackground && yarn draw",
-    "draw-mv": "mv ./renderBackground/output/* ./game/public/assets/background/",
-    "full-pre": "yarn proccess && yarn proccess-mv && yarn draw && yarn draw-mv"
+    "draw-mv": "mv ./renderBackground/output/background-config.json ./game/src/assets/ && mv ./renderBackground/output/* ./game/public/assets/background/",
+    "full-pre": "yarn proccess && yarn proccess-mv && yarn draw && yarn draw-mv",
+    "derbyshire": "NODE_ENV=derbyshire node main.js && NODE_ENV=derbyshire yarn full-pre",
+    "derbyshire-draw": "NODE_ENV=derbyshire node main.js && NODE_ENV=derbyshire yarn draw && yarn draw-mv",
+    "england": "NODE_ENV=england node main.js && NODE_ENV=england yarn full-pre",
+    "wales": "NODE_ENV=england node main.js && NODE_ENV=wales yarn full-pre"
+  },
+  "dependencies": {
+    "custom-env": "^2.0.2",
+    "dotenv": "^16.4.5"
   }
 }

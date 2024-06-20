@@ -2,11 +2,12 @@ import { Tile } from "./Classes/Tile";
 import { TILES } from "../global-constants";
 import getTile from "../renderBackground/getTile";
 
+require('custom-env').env(true, "../maps");
+
+const geoJsonPath = `./geojson/${process.env.GEOJSON}`;
 var globalMercator = require('global-mercator');
 const geolib = require('geolib');
-// var county = require('./geojson/england.json');
-
-var county = require('./geojson/counties/england/derbyshire.json');
+var county = require(geoJsonPath);
 // var countyRivers = require('./counties/england/derbyshire-rivers.json');
 var PNG = require('pngjs2').PNG;
 var PF = require('pathfinding');
@@ -24,13 +25,19 @@ enum MODE {
 const SPEED: MODE = MODE.fast;
 
 const LAT_INDEX = 1, LON_INDEX = 0;
-const ZOOM = 17.7;
+const ZOOM = process.env.ZOOM;
 const TIMES_TO_SMOOTH = 5;
-// const ZOOM = 15.5;
 const TILE_SIZE = 32;
 const PADDING = 1 * TILE_SIZE;
 const AREA_TO_FILL_AROUND_PATH = 4;
 const AREA_TO_FILL_AROUND_PLACE = 4;
+
+
+console.log("------------------------------------------");
+console.log(`Now rendering map for ${process.env.COUNTY_NAME}`);
+console.log(`\tgeoJson: ${geoJsonPath}`);
+console.log(`\tzoom: ${ZOOM}`);
+console.log("\t\tRemember to run ", "yarn start:ors", "before this");
 
 let highestLat = null, lowestLat = null, highestLon = null, lowestLon = null;
 
@@ -54,10 +61,6 @@ function roundUpToNearest(number, target = 32) {
 }
 const gridSizeWidth = roundUpToNearest(Math.abs(lowestLon - highestLon) + (PADDING * 2) + 1);
 const gridSizeHeight = roundUpToNearest(Math.abs(lowestLat - highestLat) + (PADDING * 2) + 1);
-
-console.log(gridSizeWidth);
-console.log(gridSizeHeight);
-
 
 function validCoord(_y, _x) {
     return _x > 0 && _y > 0 && _y < gridSizeHeight && _x < gridSizeWidth;

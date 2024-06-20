@@ -9,12 +9,12 @@ const RenderText = () => {
             case 'city':
                 return 90;
             case 'town':
-                return 70;
+                return 50;
             case 'village':
             case 'suburb':
-                return 50;
+                return 30;
             default:
-                return 40;
+                return 20;
         }
     }
 

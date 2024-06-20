@@ -1,6 +1,9 @@
 {
+  "license": "MIT",
   "dependencies": {
     "chaikin-smooth": "^1.0.4",
+    "custom-env": "^2.0.2",
+    "dotenv": "^16.4.5",
     "geolib": "^3.3.1",
     "global-mercator": "^3.1.0",
     "google-polyline": "^1.0.3",

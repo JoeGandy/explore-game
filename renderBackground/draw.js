@@ -1,5 +1,8 @@
 const { createCanvas, loadImage } = require("canvas");
 const fs = require("fs");
+
+require('custom-env').env(true, "../maps");
+
 const map = require("./raw-data.json");
 const globals = require("../global-constants");
 const getEdgeTile = require("./getEdgeTile");
@@ -12,8 +15,14 @@ const remoteTileDefintion = require("./tileDefinitions/remote.json");
 const width = map[0].length * globals.TILE_SIZE;
 const height = map.length * globals.TILE_SIZE;
 
-const hPieces = globals.BACKGROUND_PIECES_HORITZONTAL;
-const vPieces = globals.BACKGROUND_PIECES_VERTICAL;
+
+console.log("------------------------------------------");
+console.log(`Now rendering map for ${process.env.COUNTY_NAME}`);
+console.log(`\tHorizontal Pieces: ${process.env.BACKGROUND_PIECES_HORITZONTAL}`);
+console.log(`\tVertical Pieces: ${process.env.BACKGROUND_PIECES_VERTICAL}`);
+
+const hPieces = process.env.BACKGROUND_PIECES_HORITZONTAL || globals.BACKGROUND_PIECES_HORITZONTAL;
+const vPieces = process.env.BACKGROUND_PIECES_VERTICAL || globals.BACKGROUND_PIECES_VERTICAL;
 
 const canvasWidth = (width / hPieces);
 const canvasHeight = (height / vPieces);
@@ -27,9 +36,8 @@ const spriteMapColumns = 32;
 context.fillStyle = "#764abc";
 context.fillRect(0, 0, canvasWidth, canvasHeight);
 
-console.log(canvasWidth, canvasHeight);
-
 const landIds = [0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 325, 326, 327, 328];
+
 
 function getFromArray(array) {
     return array[Math.floor(Math.random() * array.length)];
@@ -84,7 +92,7 @@ function getTileXY(tile) {
             id = getFromArray([213, 2, 1, 1, 209]);
             break;
         case globals.TILES.BUILT_UP_DENSITY_3:
-            id = getFromArray([213, 212, 211 , 2, 1, 209]);
+            id = getFromArray([213, 212, 211, 2, 1, 209]);
             break;
         case globals.TILES.BUILT_UP_DENSITY_4:
             id = getFromArray([213, 212, 211, 1, 209]);
@@ -129,6 +137,7 @@ loadImage("../spritemap-new-new.png").then((tileMap) => {
                 }
             }
             const buffer = canvas.toBuffer("image/png");
+            console.log("writing to", `./output/background-${hPiece}-${vPiece}.png`);
             fs.writeFileSync(`./output/background-${hPiece}-${vPiece}.png`, buffer);
             console.log("\t|\tFile " + (image++) + " of " + (hPieces * vPieces) + " created");
 
@@ -137,5 +146,10 @@ loadImage("../spritemap-new-new.png").then((tileMap) => {
     }
 
 
+    var json = JSON.stringify({
+        horizontalPieces: hPieces,
+        verticalPieces: vPieces,
+    });
+    fs.writeFile('./output/background-config.json', json, 'utf8', () => { });
 
 });
