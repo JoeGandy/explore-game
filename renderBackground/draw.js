@@ -19,12 +19,14 @@ const canvasHeight = (height / vPieces);
 const canvas = createCanvas(canvasWidth, canvasHeight);
 const context = canvas.getContext("2d");
 
+// const spriteMapColumns = 40;
+const spriteMapColumns = 32;
 
 context.fillStyle = "#764abc";
 context.fillRect(0, 0, canvasWidth, canvasHeight);
 
-const landIds = [405, 367, 407, 408];
-const remoteLandIds = [1215, 1177, 1178, 1217, 1218];
+const landIds = [0, 1, 2, 3, 4, 5, 6];
+const remoteLandIds = [291, 292, 293];
 function getTileXY(tile) {
     let id = null;
 
@@ -45,36 +47,33 @@ function getTileXY(tile) {
         case 4: //PLACE
             switch (tile.extraInfo.properties.place) {
                 case 'hamlet':
-                    id = 1001;
+                    id = 201;
                     break;
                 case 'village':
-                    id = 1001;
+                    id = 199;
                     break;
                 case 'town':
-                    id = 1001;
-                    break;
-                case 'town':
-                    id = 1001;
+                    id = 195;
                     break;
                 case 'city':
-                    id = 1001;
+                    id = 198;
                     break;
                 case 'suburb':
-                    id = 1001;
+                    id = 193;
                     break;
             }
             break;
         default:
-            id = 161;
+            id = 704;
     }
 
     return {
-        x: Math.floor(id % 40) * globals.TILE_SIZE,
-        y: Math.floor(id / 40) * globals.TILE_SIZE,
+        x: Math.floor(id % spriteMapColumns) * globals.TILE_SIZE,
+        y: Math.floor(id / spriteMapColumns) * globals.TILE_SIZE,
     } //https://stackoverflow.com/questions/47951361/finding-x-y-based-off-of-index
 }
 
-loadImage("../spritemap-new.png").then((tileMap) => {
+loadImage("../spritemap-new-new.png").then((tileMap) => {
     let image = 1;
     for (let hPiece = 0; hPiece < hPieces; hPiece++) {
         for (let vPiece = 0; vPiece < vPieces; vPiece++) {

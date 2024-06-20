@@ -41,7 +41,7 @@ function getTile(map, tile, direction) {
     return map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y].type;
 }
 
-const debugTile = 786;
+const debugTile = 704;
 // 16 | 32 | 64
 // --+---+---
 // 8  | x  | 128

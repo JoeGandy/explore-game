@@ -1,57 +1,57 @@
 {
-    "mainTile": 1201,
-    "targetTile": 405,
+    "mainTile": 87,
+    "targetTile": 2,
     "out": {
-        "topLeft": 1201,
-        "topRight": 1201,
-        "bottomRight": 1201,
-        "bottomLeft": 1201
+        "topLeft": 87,
+        "topRight": 87,
+        "bottomRight": 87,
+        "bottomLeft": 87
     },
     "inwards": {
-        "topLeft": 876,
-        "topRight": 877,
-        "bottomRight": 917,
-        "bottomLeft": 916,
-        "left": 878,
-        "right": 839,
-        "top": 838,
-        "bottom": 879
+        "topLeft": 67,
+        "topRight": 70,
+        "bottomRight": 68,
+        "bottomLeft": 69,
+        "left": 74,
+        "right": 72,
+        "top": 71,
+        "bottom": 73
 
     },
     "narrow": {
-        "horizontal": 836,
-        "vertical": 835,
-        "topLeft": 876,
-        "topRight": 877,
-        "bottomRight": 917,
-        "bottomLeft": 916,
-        "narrowTDown": 838,
-        "narrowTUp": 879,
-        "narrowTRight": 878,
-        "narrowTLeft": 839,
-        "topT": 838,
-        "leftT": 878,
-        "bottomT": 879,
-        "rightT": 839
+        "horizontal": 65,
+        "vertical": 66,
+        "topLeft": 67,
+        "topRight": 70,
+        "bottomRight": 68,
+        "bottomLeft": 69,
+        "narrowTDown": 71,
+        "narrowTUp": 73,
+        "narrowTRight": 74,
+        "narrowTLeft": 72,
+        "topT": 71,
+        "leftT": 74,
+        "bottomT": 73,
+        "rightT": 72
     },
     "end": {
-        "top": 918,
-        "left": 958,
-        "bottom": 959,
-        "right": 919,
-        "diagonalLeft": 1201,
-        "diagonalRight": 1201
+        "top": 77,
+        "left": 75,
+        "bottom": 78,
+        "right": 76,
+        "diagonalRight": 87,
+        "diagonalLeft": 87
 
     },
     "cornerToNarrow": {
-        "topFromRight": 878,
-        "bottomFromRight": 878,
-        "leftFromBottom": 838,
-        "topFromLeft": 839,
-        "bottomFromLeft": 839,
-        "rightFromBottom": 838,
-        "rightFromTop": 879,
-        "leftFromTop": 879
+        "topFromRight": 74,
+        "bottomFromRight": 74,
+        "leftFromBottom": 71,
+        "topFromLeft": 72,
+        "bottomFromLeft": 72,
+        "rightFromBottom": 71,
+        "rightFromTop": 73,
+        "leftFromTop": 73
 
     }
 }

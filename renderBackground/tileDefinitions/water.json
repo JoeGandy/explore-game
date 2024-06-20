@@ -1,54 +1,42 @@
 {
-    "mainTile": [283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 283, 41, 40, 42, 40, 41 ],
-    "targetTile": 405,
+    "mainTile": 1056,
+    "targetTile": 2,
     "inwards": {
-        "topLeft": 242,
-        "top": 243,
-        "topRight": 244,
-        "right": 284,
-        "bottomRight": 324,
-        "bottom": 323,
-        "bottomLeft": 322,
-        "left": 282
+        "topLeft": 96,
+        "top": 91,
+        "topRight": 99,
+        "right": 88,
+        "bottomRight": 103,
+        "bottom": 90,
+        "bottomLeft": 100,
+        "left": 89
     },
     "out": {
-        "topLeft": 362,
-        "topRight": 363,
-        "bottomRight": 403,
-        "bottomLeft": 402
+        "topLeft": 102,
+        "topRight": 101,
+        "bottomRight": 97,
+        "bottomLeft": 98
     },
     "end": {
-        "top": 831,
-        "left": 832,
-        "bottom": 833,
-        "right": 834,
-        "diagonalLeft": 874,
-        "diagonalRight": 875
+        "top": 8,
+        "left": 7,
+        "bottom": 8,
+        "right": 7
     },
     "narrow": {
-        "topLeft": 951,
-        "topRight": 950,
-        "bottomRight": 990,
-        "bottomLeft": 991,
-        "horizontal": 911,
-        "vertical": 910,
-        "topT": 870,
-        "leftT": 871,
-        "bottomT": 872,
-        "rightT": 873,
-        "narrowTDown": 992, 
-        "narrowTUp": 993,
-        "narrowTRight": 994,
-        "narrowTLeft": 995
-    },
-    "cornerToNarrow": {
-        "topFromRight": 912,
-        "rightFromBottom": 913,
-        "leftFromBottom": 914,
-        "topFromLeft": 915,
-        "leftFromTop": 952,
-        "bottomFromLeft": 953,
-        "bottomFromRight": 954,
-        "rightFromTop": 955
+        "topLeft": 9,
+        "topRight": 12,
+        "bottomRight": 11,
+        "bottomLeft": 10,
+        "horizontal": 7,
+        "vertical": 8,
+        "topT": 94,
+        "leftT": 92,
+        "bottomT": 95,
+        "rightT": 93,
+        "narrowTDown": 13, 
+        "narrowTUp": 15,
+        "narrowTRight": 16,
+        "narrowTLeft": 14
     }
 }

@@ -28,7 +28,7 @@ function getTilemapMapping({
         17: end?.diagonalRight,
         18: narrow?.bottomT,
         19: cornerToNarrow?.leftFromTop,
-        20: mainTile,
+        20: narrow?.rightT,
         21: mainTile,
         22: cornerToNarrow?.leftFromTop,
         23: cornerToNarrow?.leftFromTop,
