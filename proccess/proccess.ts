@@ -127,21 +127,21 @@ locations.reverse().forEach((place, i) => {
     fillSquareAround(map, y, x, AREA_TO_FILL_AROUND_PLACE);
 });
 
-function getDensity(place) {
-    switch (place.properties.place) {
+function getDensity(place = undefined) {
+    switch (place?.properties?.place) {
         case 'hamlet':
             return {
-                radius: 2,
+                radius: 0,
                 tile: TILES.BUILT_UP_DENSITY_1
             };
         case 'village':
             return {
-                radius: 2,
+                radius: 0,
                 tile: TILES.BUILT_UP_DENSITY_2
             };
         case 'town':
             return {
-                radius: 3,
+                radius: 2,
                 tile: TILES.BUILT_UP_DENSITY_3
             };
         case 'suburb':
@@ -153,6 +153,10 @@ function getDensity(place) {
             return {
                 radius: 10,
                 tile: TILES.BUILT_UP_DENSITY_5
+            };
+        default:
+            return {
+                tile: TILES.BUILT_UP_DENSITY_2
             };
     }
 }
@@ -565,6 +569,8 @@ function postProccess() {
                 const tile = map[y][x];
                 const densityDefiniton = getDensity(tile.extraInfo);
 
+                map = fillSquareAround(map, y, x,  densityDefiniton.radius + 4);
+                map = fillSquareAround(map, y, x, densityDefiniton.radius + 2, getDensity().tile);
                 map = fillSquareAround(map, y, x, densityDefiniton.radius, densityDefiniton.tile);
                 map = upgradeRoads(map, y, x, densityDefiniton.radius);
             }
