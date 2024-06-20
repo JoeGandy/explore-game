@@ -48,8 +48,15 @@ locations.forEach((place) => {
         highestLon = mapCoords[LON_INDEX];
 })
 
-const gridSizeWidth = Math.abs(lowestLon - highestLon) + (PADDING * 2) + 1;
-const gridSizeHeight = Math.abs(lowestLat - highestLat) + (PADDING * 2) + 1;
+function roundUpToNearest(number, target = 32) {
+    return Math.ceil(number / target) * target;
+}
+const gridSizeWidth = roundUpToNearest(Math.abs(lowestLon - highestLon) + (PADDING * 2) + 1);
+const gridSizeHeight = roundUpToNearest(Math.abs(lowestLat - highestLat) + (PADDING * 2) + 1);
+
+console.log(gridSizeWidth);
+console.log(gridSizeHeight);
+
 
 function validCoord(_y, _x) {
     return _x > 0 && _y > 0 && _y < gridSizeHeight && _x < gridSizeWidth;

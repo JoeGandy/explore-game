@@ -1,4 +1,5 @@
 const getTilemapMapping = require("./getTilemapMapping");
+const globals = require("../global-constants");
 
 function getTile(map, tile, direction) {
     let modifier = { x: 0, y: 0 };
@@ -41,6 +42,10 @@ function getTile(map, tile, direction) {
     return map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y].type;
 }
 
+function getKeyByValue(object, value) {
+    return Object.keys(object).find(key => object[key] === value);
+}
+
 const debugTile = 704;
 // 16 | 32 | 64
 // --+---+---
@@ -68,7 +73,7 @@ function getEdgeTile(map, tile, tileDefinition) {
     const tileMap = getTilemapMapping({ ...tileDefinition, mainTile });
 
     if (typeof (tileMap[runningTotal]) === "undefined") {
-        console.log('[', tile.type, ']', runningTotal, 'does not have a tile');
+        console.log('[', getKeyByValue(globals.TILES, tile.type), ']', runningTotal, 'does not have a tile @ x:', tile.coordinate.x, ', y:', tile.coordinate.y);
     }
 
     return tileMap[runningTotal] || debugTile;

@@ -5,6 +5,7 @@ const globals = require("../global-constants");
 const getEdgeTile = require("./getEdgeTile");
 const waterTileDefintion = require("./tileDefinitions/water.json");
 const roadTileDefintion = require("./tileDefinitions/road.json");
+const remoteTileDefintion = require("./tileDefinitions/remote.json");
 
 // Dimensions for the image
 const width = map[0].length * globals.TILE_SIZE;
@@ -25,7 +26,9 @@ const spriteMapColumns = 32;
 context.fillStyle = "#764abc";
 context.fillRect(0, 0, canvasWidth, canvasHeight);
 
-const landIds = [0, 1, 2, 3, 4, 5, 6];
+console.log(canvasWidth, canvasHeight);
+
+const landIds = [0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 325, 326, 327, 328];
 const remoteLandIds = [291, 292, 293];
 function getTileXY(tile) {
     let id = null;
@@ -39,7 +42,7 @@ function getTileXY(tile) {
             id = landIds[Math.floor(Math.random() * landIds.length)];
             break;
         case 2: //REMOTELAND
-            id = remoteLandIds[Math.floor(Math.random() * remoteLandIds.length)];
+            id = getEdgeTile(map, tile, remoteTileDefintion);
             break;
         case 3: //ROAD
             id = getEdgeTile(map, tile, roadTileDefintion);

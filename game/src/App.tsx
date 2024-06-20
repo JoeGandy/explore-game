@@ -140,6 +140,7 @@ const App = () => {
   const viewportRef = useRef<Viewport>(null);
   const [highLightedCoords, setHighLightedCoords] = useState<number[][] | null>([]);
   const [highLightedtiles, setHighLightedtiles] = useState<any[] | null>([]);
+  const [targetCoordinate, setTargetCoordinate] = useState<{ x: number, y: number }>({ x: 50, y: 50 });
 
   const focus = useCallback((p: keyof typeof areas) => {
     const viewport = viewportRef.current!;
@@ -148,6 +149,15 @@ const App = () => {
 
     viewport.setZoom(0.2);
     viewport.snap(x, y, { removeOnComplete: true });
+  }, []);
+
+  const jumpToCoordinate = useCallback((coordinate: { x: number, y: number }) => {
+    const viewport = viewportRef.current!;
+
+    const { x, y } = coordinate;
+    console.log(coordinate);
+    viewport.setZoom(0.5);
+    viewport.snap(y * 32, x * 32, { removeOnComplete: true });
   }, []);
 
   const onViewPortClicked = (event) => {
@@ -252,6 +262,20 @@ const App = () => {
         <button onClick={() => focus('world')}>Center</button>
         <button onClick={() => focus('pinxton')}>Pinxton</button>
         <button onClick={() => focus('derby')}>Derby</button>
+        <input
+          type="number"
+          defaultValue={50}
+          onChange={(e) => {
+            setTargetCoordinate({ ...targetCoordinate, x: Number(e.target.value) })
+            jumpToCoordinate({ ...targetCoordinate, x: Number(e.target.value) });
+          }} />
+        <input
+          type="number"
+          defaultValue={50}
+          onChange={(e) => {
+            setTargetCoordinate({ ...targetCoordinate, y: Number(e.target.value) })
+            jumpToCoordinate({ ...targetCoordinate, y: Number(e.target.value) });
+          }} />
       </div>
 
 
