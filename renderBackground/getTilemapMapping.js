@@ -191,6 +191,7 @@ function getTilemapMapping({
         187: targetTile,
         188: end?.top,
         189: end?.top,
+        190: targetTile,
         191: targetTile,
         192: inwards?.right,
         193: inwards?.right,

@@ -18,7 +18,8 @@
         "leftFromBottom": 96,
         "bottomFromRight": 100,
         "rightFromBottom": 99,
-        "rightFromTop": 103
+        "rightFromTop": 103,
+        "topFromLeft": 99
     },
     "out": {
         "topLeft": 102,

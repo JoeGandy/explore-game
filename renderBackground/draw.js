@@ -5,6 +5,7 @@ const globals = require("../global-constants");
 const getEdgeTile = require("./getEdgeTile");
 const waterTileDefintion = require("./tileDefinitions/water.json");
 const roadTileDefintion = require("./tileDefinitions/road.json");
+const cityRoadTileDefintion = require("./tileDefinitions/cityRoad.json");
 const remoteTileDefintion = require("./tileDefinitions/remote.json");
 
 // Dimensions for the image
@@ -29,25 +30,35 @@ context.fillRect(0, 0, canvasWidth, canvasHeight);
 console.log(canvasWidth, canvasHeight);
 
 const landIds = [0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 325, 326, 327, 328];
-const remoteLandIds = [291, 292, 293];
+
+function getFromArray(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+// https://www.boristhebrave.com/2021/11/14/classification-of-tilesets/
 function getTileXY(tile) {
     let id = null;
 
     switch (tile.type) {
-        case 0: //WATER
-            // https://www.boristhebrave.com/2021/11/14/classification-of-tilesets/
+        case globals.TILES.WATER:
             id = getEdgeTile(map, tile, waterTileDefintion);
             break;
-        case 1: //LAND
-            id = landIds[Math.floor(Math.random() * landIds.length)];
+        case globals.TILES.LAND:
+            id = getFromArray(landIds);
             break;
-        case 2: //REMOTELAND
+        case globals.TILES.REMOTELAND:
             id = getEdgeTile(map, tile, remoteTileDefintion);
             break;
-        case 3: //ROAD
-            id = getEdgeTile(map, tile, roadTileDefintion);
+        case globals.TILES.ROAD:
+            id = getEdgeTile(map, tile, roadTileDefintion,
+                (_targetTile, _tile) => ![globals.TILES.ROAD, globals.TILES.CITY_ROAD].includes(_targetTile)
+            );
             break;
-        case 4: //PLACE
+        case globals.TILES.CITY_ROAD:
+            id = getEdgeTile(map, tile, cityRoadTileDefintion,
+                (_targetTile, _tile) => ![globals.TILES.CITY_ROAD, globals.TILES.ROAD].includes(_targetTile)
+            );
+            break;
+        case globals.TILES.PLACE:
             switch (tile.extraInfo.properties.place) {
                 case 'hamlet':
                     id = 201;
@@ -65,6 +76,21 @@ function getTileXY(tile) {
                     id = 193;
                     break;
             }
+            break;
+        case globals.TILES.BUILT_UP_DENSITY_1:
+            id = getFromArray([213, 2, 1, 1, 209]);
+            break;
+        case globals.TILES.BUILT_UP_DENSITY_2:
+            id = getFromArray([213, 2, 1, 1, 209]);
+            break;
+        case globals.TILES.BUILT_UP_DENSITY_3:
+            id = getFromArray([213, 212, 211 , 2, 1, 209]);
+            break;
+        case globals.TILES.BUILT_UP_DENSITY_4:
+            id = getFromArray([213, 212, 211, 1, 209]);
+            break;
+        case globals.TILES.BUILT_UP_DENSITY_5:
+            id = getFromArray([213, 203, 212, 211, 208, 207, 206, 209]);
             break;
         default:
             id = 704;

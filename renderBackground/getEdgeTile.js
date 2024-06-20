@@ -12,7 +12,7 @@ const debugTile = 704;
 // 8  | x  | 128
 // --+---+---
 // 4  | 2  | 1
-function getEdgeTile(map, tile, tileDefinition) {
+function getEdgeTile(map, tile, tileDefinition, customMatcher) {
     let mainTile = tileDefinition.mainTile;
 
     if (Array.isArray(tileDefinition.mainTile)) {
@@ -25,8 +25,14 @@ function getEdgeTile(map, tile, tileDefinition) {
 
     order.forEach(function (target, i) {
         const targetTile = getTile(map, tile, target);
-        if (targetTile != tile.type) {
-            runningTotal += bit[i];
+        if(customMatcher) {
+            if(customMatcher(targetTile, tile)){
+                runningTotal += bit[i];
+            }
+        }else{
+            if (targetTile != tile.type) {
+                runningTotal += bit[i];
+            }
         }
     });
 

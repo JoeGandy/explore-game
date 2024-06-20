@@ -1,4 +1,4 @@
-import { TILES } from "./Tiles";
+import { TILES } from "../../global-constants";
 
 
 type coordinate = {
@@ -25,6 +25,7 @@ export class Tile {
         switch (type) {
             case TILES.ROAD:
             case TILES.PLACE:
+            case TILES.CITY_ROAD:
                 return false;
             case TILES.LAND:
             case TILES.REMOTELAND:
@@ -32,36 +33,6 @@ export class Tile {
             case TILES.WATER:
             default:
                 return true;
-        }
-    }
-
-    getColour() {
-        switch (this.type) {
-            case TILES.ROAD:
-                return [20, 20, 20];
-            case TILES.LAND:
-                return [50, 90, 50];
-            case TILES.REMOTELAND:
-                return [30, 70, 30];
-            case TILES.DEBUG:
-                return [255, 255, 0];
-            case TILES.WATER:
-                return [50, 50, 180];
-            case TILES.PLACE:
-                switch(this.extraInfo.properties.place){
-                    case 'hamlet': 
-                        return [150, 0, 0];
-                    case 'village': 
-                        return [175, 0, 0];
-                    case 'town':
-                        return [200, 0, 0];
-                    case 'city':
-                        return [225, 0, 0];
-                    case 'suburb':
-                        return [225, 100, 100];
-                }
-            default:
-                return [255, 255, 255];
         }
     }
 
