@@ -49,3 +49,12 @@ https://overpass-turbo.eu/
 
 export as GeoJSON
 
+
+# Running the project
+
+Ensure you have pbf file in `./proccess/pbfs/` e.g. `united-kingdom-latest.osm.pbf`
+
+Ensure yarn ors has been ran, this can take some time as it will generate the routing 
+
+run yarn derbyshrie, as an example
+
