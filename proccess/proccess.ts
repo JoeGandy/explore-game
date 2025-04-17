@@ -477,55 +477,47 @@ function postProccess() {
         })
     })
 
-    // console.log("\t|\tCleaning excess roads");
-    // for (var y = 0; y < gridSizeHeight; y++) {
-    //     for (var x = 0; x < gridSizeWidth; x++) {
-    //         const tile = map[y][x];
-    //         if (
-    //             tile !== undefined &&
-    //             tile.type == TILES.ROAD
-    //         ) {
-    //             const rightTileType = getTile(map, tile, 'right'),
-    //                 belowTileType = getTile(map, tile, 'below'),
-    //                 belowRightTileType = getTile(map, tile, 'belowRight');
+    console.log("\t|\tCleaning excess roads");
+    for (var y = 0; y < gridSizeHeight; y++) {
+        for (var x = 0; x < gridSizeWidth; x++) {
+            const tile = map[y][x];
+            if (
+                tile !== undefined &&
+                tile.type == TILES.ROAD
+            ) {
+                const rightTileType = getTile(map, tile, 'right'),
+                    belowTileType = getTile(map, tile, 'below'),
+                    belowRightTileType = getTile(map, tile, 'belowRight');
 
-    //             if (rightTileType === TILES.ROAD && belowTileType === TILES.ROAD && belowRightTileType === TILES.ROAD) {
-    //                 //currentTile
-    //                 if (getTile(map, tile, 'left') !== TILES.ROAD && getTile(map, tile, 'above') !== TILES.ROAD) {
-    //                     let { x, y } = tile.coordinate;
-    //                     console.log(x,y,'road deleted');
-    //                     map[x][y] = new Tile(TILES.LAND, y, x);
-    //                 }
-    //                 //rightTile
-    //                 // let modifier = { x: 0, y: 1 };
-    //                 // if (
-    //                 //     getTile(map, tile, 'right', modifier.x, modifier.y) !== TILES.ROAD &&
-    //                 //     getTile(map, tile, 'above', modifier.x, modifier.y) !== TILES.ROAD
-    //                 // ) {
-    //                 //     let { x, y } = tile.coordinate;
-    //                 //     x = x + modifier.x;
-    //                 //     y = y + modifier.y;
-    //                 //     console.log(x, y, 'road deleted');
-    //                 //     map[y][x] = new Tile(TILES.LAND, x, y);
-    //                 // }
+                if (rightTileType === TILES.ROAD && belowTileType === TILES.ROAD && belowRightTileType === TILES.ROAD) {
+                    //Means all 4 tiles are roads
+                    // Loop through each one and delete the least connected
+                    let currentMost = { value: 0, x: -1, y: -1 };
 
-    //                 //belowTile
+                    for(var _x = tile.coordinate.x; _x <= (tile.coordinate.x+1); _x++){
+                        for(var _y = tile.coordinate.y; _y <= (tile.coordinate.y+1); _y++){
+                            const totalConnections = ['above', 'below', 'left', 'right'].map((direction) => {
+                                return getTile(map, map[_x][_y], direction) === TILES.ROAD ? 1 : 0;
+                            }).reduce((a, b) => a + b, 0)
 
+                            if(totalConnections > currentMost.value){
+                                currentMost = {
+                                    value: totalConnections,
+                                    x: _x,
+                                    y: _y
+                                }
+                            }
 
-    //                 //belowRightTile
-    //             }
-    //             //get 2x2 tiles that are all roads
-    //             // look round the edge of that 2x2
-    //             // X   |   X  |   X   |   X
-    //             // X   |   R  |   R   |   X
-    //             // X   |   R  |   R   |   X
-    //             // X   |   X  |   X   |   X
+                        }
 
-    //             // go through each R, if it not adjacent to one on the edge, delete this road
+                    }
+                    map[currentMost.x][currentMost.y] = new Tile(TILES.DEBUG, currentMost.y, currentMost.x);
+                    console.log(currentMost.x, currentMost.y, 'road deleted', 'on pass', i, 'connections', currentMost.value);
+                }
 
-    //         }
-    //     }
-    // }
+            }
+        }
+    }
 
     console.log("\t|\tIdentifiying places without road connections");
     for (var y = 0; y < gridSizeHeight; y++) {
@@ -572,7 +564,7 @@ function postProccess() {
                 const tile = map[y][x];
                 const densityDefiniton = getDensity(tile.extraInfo);
 
-                map = fillSquareAround(map, y, x,  densityDefiniton.radius + 4);
+                map = fillSquareAround(map, y, x, densityDefiniton.radius + 4);
                 map = fillSquareAround(map, y, x, densityDefiniton.radius + 2, getDensity().tile);
                 map = fillSquareAround(map, y, x, densityDefiniton.radius, densityDefiniton.tile);
                 map = upgradeRoads(map, y, x, densityDefiniton.radius);
