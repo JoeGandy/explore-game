@@ -24,7 +24,7 @@ function getEdgeTile(map, tile, tileDefinition, customMatcher) {
     let runningTotal = 0;
 
     order.forEach(function (target, i) {
-        const targetTile = getTile(map, tile, target);
+        const targetTile = getTile(map, tile, target)?.type;
         if(customMatcher) {
             if(customMatcher(targetTile, tile)){
                 runningTotal += bit[i];

@@ -1,7 +1,7 @@
 import { Tile } from "./Classes/Tile";
 import { TILES } from "../global-constants";
 import getTile from "../renderBackground/getTile";
-
+import { getDirections } from "./getDirections"
 require('custom-env').env(true, "../maps");
 
 const geoJsonPath = `./geojson/${process.env.GEOJSON}`;
@@ -11,7 +11,6 @@ var county = require(geoJsonPath);
 // var countyRivers = require('./counties/england/derbyshire-rivers.json');
 var PNG = require('pngjs2').PNG;
 var PF = require('pathfinding');
-var openrouteservice = require("openrouteservice-js");
 var polyline = require('google-polyline');
 var smooth = require('chaikin-smooth');
 var knownRoutes = [];
@@ -212,8 +211,6 @@ locations.forEach((place, i) => {
     locations[i].closest = closest;
 });
 
-var Directions = new openrouteservice.Directions({ api_key: "5b3ce3597851110001cf6248aff83dabb7174507986671360deb89cd" });
-
 function uniq(a) {
     var seen = {};
     return a.filter(function (item) {
@@ -227,17 +224,9 @@ let requests = [];
 locations.forEach(async (place, i) => {
     requests = requests.concat(place.closest.map(async (location, index) => {
         getPercentageString(i, locations.length, "Building API requests");
-        await Directions.calculate({
-            host: 'http://localhost:8080/ors',
-            coordinates: [place.geometry.coordinates, location.geometry.coordinates],
-            profile: 'driving-car',
-            radiuses: [-1],
-            instructions: false,
-            format: 'json',
-            timeout: 500000,
-        })
+        return getDirections(place, location)
             .then(function (json) {
-                let smoothPolyLine = polyline.decode(json.routes[0].geometry);
+                let smoothPolyLine = polyline.decode((json as any).routes[0].geometry);
                 let count = 0;
                 while (count < TIMES_TO_SMOOTH) {
                     smoothPolyLine = smooth(smoothPolyLine);
@@ -264,7 +253,7 @@ locations.forEach(async (place, i) => {
                     from: place,
                     to: location,
                     id: routeId,
-                    route
+                    route,
                 });
             })
             .catch(function (err) {
@@ -366,14 +355,14 @@ function removeNarrow() {
         for (var x = 0; x < gridSizeWidth; x++) {
             const tile = map[y][x];
             if (tile?.type == TILES.WATER) {
-                const aboveTile = getTile(tile, 'above');
-                const aboveLeftTile = getTile(tile, 'aboveLeft');
-                const aboveRightTile = getTile(tile, 'aboveRight');
-                const belowTile = getTile(tile, 'below');
-                const belowLeftTile = getTile(tile, 'belowLeft');
-                const belowRightTile = getTile(tile, 'belowRight');
-                const leftTile = getTile(tile, 'left');
-                const rightTile = getTile(tile, 'right');
+                const aboveTile = getTile(tile, 'above').type;
+                const aboveLeftTile = getTile(tile, 'aboveLeft').type;
+                const aboveRightTile = getTile(tile, 'aboveRight').type;
+                const belowTile = getTile(tile, 'below').type;
+                const belowLeftTile = getTile(tile, 'belowLeft').type;
+                const belowRightTile = getTile(tile, 'belowRight').type;
+                const leftTile = getTile(tile, 'left').type;
+                const rightTile = getTile(tile, 'right').type;
 
                 const matrix = [
                     [aboveLeftTile === tile.type, aboveTile === tile.type, aboveRightTile === tile.type],
@@ -477,47 +466,86 @@ function postProccess() {
         })
     })
 
-    console.log("\t|\tCleaning excess roads");
-    for (var y = 0; y < gridSizeHeight; y++) {
-        for (var x = 0; x < gridSizeWidth; x++) {
-            const tile = map[y][x];
-            if (
-                tile !== undefined &&
-                tile.type == TILES.ROAD
-            ) {
-                const rightTileType = getTile(map, tile, 'right'),
-                    belowTileType = getTile(map, tile, 'below'),
-                    belowRightTileType = getTile(map, tile, 'belowRight');
 
-                if (rightTileType === TILES.ROAD && belowTileType === TILES.ROAD && belowRightTileType === TILES.ROAD) {
-                    //Means all 4 tiles are roads
-                    // Loop through each one and delete the least connected
-                    let currentMost = { value: 0, x: -1, y: -1 };
 
-                    for(var _x = tile.coordinate.x; _x <= (tile.coordinate.x+1); _x++){
-                        for(var _y = tile.coordinate.y; _y <= (tile.coordinate.y+1); _y++){
-                            const totalConnections = ['above', 'below', 'left', 'right'].map((direction) => {
-                                return getTile(map, map[_x][_y], direction) === TILES.ROAD ? 1 : 0;
-                            }).reduce((a, b) => a + b, 0)
+    console.log("\t|\tFix missing road diagonals");
+    knownRoutes.forEach(routeObj => {
+        routeObj.route.forEach((coord) => {
+            const x = coord[1];
+            const y = coord[0];
 
-                            if(totalConnections > currentMost.value){
-                                currentMost = {
-                                    value: totalConnections,
-                                    x: _x,
-                                    y: _y
-                                }
-                            }
+            if (!validCoord(y, x)) return;
+            if (map[x][y]?.type === TILES.PLACE) return;
 
-                        }
+            const totalConnections = ['above', 'below', 'left', 'right'].map((direction) => {
+                const adjacentTile = getTile(map, map[x][y], direction);
+                if (!adjacentTile) return 0;
+                return adjacentTile.type === TILES.ROAD || adjacentTile.type === TILES.CITY_ROAD || adjacentTile.type === TILES.PLACE ? 1 : 0;
+            }).reduce((a, b) => a + b, 0);
 
+            //If only has one connection
+            if (totalConnections === 1) {
+                console.log("Only one connection", x, y);
+                //Loop around adjacent tiles
+                ['above', 'below', 'left', 'right'].some((direction) => {
+                    const _adjacentTile = getTile(map, map[x][y], direction);
+                    //Find one that would make two adjacent roads if it was a road
+                    const roadConnectionCount = ['above', 'below', 'left', 'right'].map((direction) => {
+                        const __adjacentTileType = getTile(map, map[_adjacentTile.coordinate.x][_adjacentTile.coordinate.y], direction).type;
+                        return __adjacentTileType === TILES.ROAD || __adjacentTileType === TILES.CITY_ROAD || __adjacentTileType === TILES.PLACE ? 1 : 0;
+                    }).reduce((a, b) => a + b, 0);
+
+                    if (roadConnectionCount == 2 && _adjacentTile.type !== TILES.ROAD) {
+                        map[_adjacentTile.coordinate.x][_adjacentTile.coordinate.y] = new Tile(TILES.ROAD, _adjacentTile.coordinate.y, _adjacentTile.coordinate.x);
+                        console.log('\t|\t', _adjacentTile.coordinate.x, _adjacentTile.coordinate.y, 'road diagonal added');
+                        return "returning to only add one connection";
                     }
-                    map[currentMost.x][currentMost.y] = new Tile(TILES.DEBUG, currentMost.y, currentMost.x);
-                    console.log(currentMost.x, currentMost.y, 'road deleted', 'on pass', i, 'connections', currentMost.value);
-                }
-
+                })
             }
-        }
-    }
+        });
+    });
+
+    // console.log("\t|\tCleaning excess roads");
+    // for (var y = 0; y < gridSizeHeight; y++) {
+    //     for (var x = 0; x < gridSizeWidth; x++) {
+    //         const tile = map[y][x];
+    //         if (
+    //             tile !== undefined &&
+    //             tile.type == TILES.ROAD
+    //         ) {
+    //             const rightTileType = getTile(map, tile, 'right').type,
+    //                 belowTileType = getTile(map, tile, 'below').type,
+    //                 belowRightTileType = getTile(map, tile, 'belowRight').type;
+
+    //             if (rightTileType === TILES.ROAD && belowTileType === TILES.ROAD && belowRightTileType === TILES.ROAD) {
+    //                 //Means all 4 tiles are roads
+    //                 // Loop through each one and delete the least connected
+    //                 let currentMost = { value: 0, x: -1, y: -1 };
+
+    //                 for(var _x = tile.coordinate.x; _x <= (tile.coordinate.x+1); _x++){
+    //                     for(var _y = tile.coordinate.y; _y <= (tile.coordinate.y+1); _y++){
+    //                         const totalConnections = ['above', 'below', 'left', 'right'].map((direction) => {
+    //                             return getTile(map, map[_x][_y], direction).type === TILES.ROAD ? 1 : 0;
+    //                         }).reduce((a, b) => a + b, 0)
+
+    //                         if(totalConnections > currentMost.value){
+    //                             currentMost = {
+    //                                 value: totalConnections,
+    //                                 x: _x,
+    //                                 y: _y
+    //                             }
+    //                         }
+
+    //                     }
+
+    //                 }
+    //                 map[currentMost.x][currentMost.y] = new Tile(TILES.DEBUG, currentMost.y, currentMost.x);
+    //                 console.log('\t|\t', currentMost.x, currentMost.y, 'road deleted', 'on pass', i, 'connections', currentMost.value);
+    //             }
+
+    //         }
+    //     }
+    // }
 
     console.log("\t|\tIdentifiying places without road connections");
     for (var y = 0; y < gridSizeHeight; y++) {

@@ -21,9 +21,9 @@ const stageOptions = {
 const areas = {
   'world': [width / 2, height / 2, 0.1],
   'pinxton': [14358.891290513706, 13645.855506198452, 0.4],
-  'derby': [11373.153135617216, 18992.967234900392, 0.4]
+  'derby': [11373.153135617216, 18992.967234900392, 0.4],
+  'bamford': [7344.451031076167, 5556.966944493974, 0.95]
 };
-
 const renderMap = (mapLight: any[][], highLightedtiles, highLightedCoords) => {
   let result = [];
 
@@ -144,10 +144,10 @@ const App = () => {
 
   const focus = useCallback((p: keyof typeof areas) => {
     const viewport = viewportRef.current!;
-    const [x, y] = areas[p];
+    const [x, y, zoom] = areas[p];
 
 
-    viewport.setZoom(0.2);
+    viewport.setZoom(zoom);
     viewport.snap(x, y, { removeOnComplete: true });
   }, []);
 
@@ -262,6 +262,7 @@ const App = () => {
         <button onClick={() => focus('world')}>Center</button>
         <button onClick={() => focus('pinxton')}>Pinxton</button>
         <button onClick={() => focus('derby')}>Derby</button>
+        <button onClick={() => focus('bamford')}>Bamford</button>
         <input
           type="number"
           defaultValue={50}

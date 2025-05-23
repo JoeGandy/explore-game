@@ -1,6 +1,8 @@
 {
   "license": "MIT",
+  "module": "NodeNext",
   "dependencies": {
+    "cache-storage": "^2.0.1",
     "chaikin-smooth": "^1.0.4",
     "custom-env": "^2.0.2",
     "dotenv": "^16.4.5",

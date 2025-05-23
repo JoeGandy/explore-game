@@ -35,11 +35,11 @@ function getTile(map, tile, direction, mofidyX = 0 , modifyY = 0) {
     modifier.x = mofidyX + modifier.x;
     modifier.y = modifyY + modifier.y;
 
-    if (typeof map[tile.coordinate.x + modifier.x] === 'undefined' || typeof map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y] === 'undefined') {
+    if (!tile || typeof map[tile.coordinate.x + modifier.x] === 'undefined' || typeof map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y] === 'undefined') {
         return null;
     }
 
-    return map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y].type;
+    return map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y];
 }
 
 module.exports = getTile;
