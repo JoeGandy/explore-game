@@ -1,6 +1,6 @@
 import { Tile } from "./Classes/Tile";
 import { TILES } from "../global-constants";
-import getTile from "../renderBackground/getTile";
+import { getTile } from "./getTile";
 import { getDirections } from "./getDirections"
 require('custom-env').env(true, "../maps");
 
@@ -9,12 +9,10 @@ var globalMercator = require('global-mercator');
 const geolib = require('geolib');
 var county = require(geoJsonPath);
 // var countyRivers = require('./counties/england/derbyshire-rivers.json');
-var PNG = require('pngjs2').PNG;
 var PF = require('pathfinding');
 var polyline = require('google-polyline');
 var smooth = require('chaikin-smooth');
 var knownRoutes = [];
-const { hasUncaughtExceptionCaptureCallback } = require('process');
 
 enum MODE {
     fast = 0,
@@ -26,7 +24,7 @@ const SPEED: MODE = MODE.fast;
 const LAT_INDEX = 1, LON_INDEX = 0;
 const ZOOM = process.env.ZOOM;
 const TIMES_TO_SMOOTH = 5;
-const TILE_SIZE = 32;
+const TILE_SIZE = 24;
 const PADDING = 1 * TILE_SIZE;
 const AREA_TO_FILL_AROUND_PATH = 4;
 const AREA_TO_FILL_AROUND_PLACE = 4;
@@ -114,6 +112,18 @@ function fillSquareAround(map: Tile[][], _y, _x, width, type = TILES.LAND) {
             if (x == _x && y == _y) continue; //don't overwrite the square we're on
             if (map[y][x]?.allowDrawOver()) {
                 map[y][x] = new Tile(type, x, y);
+            }
+        }
+    }
+    return map;
+}
+function replaceAround(map: Tile[][], _y, _x, width, fromType = TILES.WATER, toType = TILES.BEACH) {
+    for (var x = (_x - width); x < (_x + width); x++) {
+        for (var y = (_y - width); y < (_y + width); y++) {
+            if (!validCoord(y, x)) continue;
+            if (x == _x && y == _y) continue; //don't overwrite the square we're on
+            if (map[y][x]?.type === fromType) {
+                map[y][x] = new Tile(toType, x, y);
             }
         }
     }
@@ -271,12 +281,25 @@ requests.forEach(
     p => p.then(() => progress++ && getPercentageString(progress, requests.length, "Issuing API Requests"))
 );
 
-function roadAroundPoint(_y, _x) {
+function tileAroundPoint(_y, _x, type = TILES.ROAD) {
     let result = false;
     for (var x = (_x - 1); x <= (_x + 1); x++) {
         for (var y = (_y - 1); y <= (_y + 1); y++) {
-            if (map[y][x].type == TILES.ROAD) {
+            if (validCoord(y, x) && map[y][x]?.type == type) {
                 result = true;
+            }
+        }
+    }
+    return result;
+}
+
+
+function tilesNotOfSameTypeAroundPointCount(_y, _x) {
+    let result = 0;
+    for (var x = (_x - 1); x <= (_x + 1); x++) {
+        for (var y = (_y - 1); y <= (_y + 1); y++) {
+            if (validCoord(y, x) && map[y][x]?.type !== map[_y][_x]?.type) {
+                result++;
             }
         }
     }
@@ -329,122 +352,6 @@ function fill(x, y, type) {
     }
 }
 
-function arrayMatch(a1, a2) {
-    return JSON.stringify(a1) === JSON.stringify(a2);
-}
-
-function rotateClockwise(a) {
-    var n = a.length;
-    for (var i = 0; i < n / 2; i++) {
-        for (var j = i; j < n - i - 1; j++) {
-            var tmp = a[i][j];
-            a[i][j] = a[n - j - 1][i];
-            a[n - j - 1][i] = a[n - i - 1][n - j - 1];
-            a[n - i - 1][n - j - 1] = a[j][n - i - 1];
-            a[j][n - i - 1] = tmp;
-        }
-    }
-    return a;
-}
-
-
-function removeNarrow() {
-    console.log("\t|\tRemoving Pointless narrow points");
-    let removingPointlessNarrow = 0;
-    for (var y = 0; y < gridSizeHeight; y++) {
-        for (var x = 0; x < gridSizeWidth; x++) {
-            const tile = map[y][x];
-            if (tile?.type == TILES.WATER) {
-                const aboveTile = getTile(tile, 'above').type;
-                const aboveLeftTile = getTile(tile, 'aboveLeft').type;
-                const aboveRightTile = getTile(tile, 'aboveRight').type;
-                const belowTile = getTile(tile, 'below').type;
-                const belowLeftTile = getTile(tile, 'belowLeft').type;
-                const belowRightTile = getTile(tile, 'belowRight').type;
-                const leftTile = getTile(tile, 'left').type;
-                const rightTile = getTile(tile, 'right').type;
-
-                const matrix = [
-                    [aboveLeftTile === tile.type, aboveTile === tile.type, aboveRightTile === tile.type],
-                    [leftTile === tile.type, true, rightTile === tile.type],
-                    [belowLeftTile === tile.type, belowTile === tile.type, belowRightTile === tile.type],
-                ];
-
-                let arrays;
-
-                //up/down/left/right edges 
-                arrays = [
-                    [
-                        [false, false, false],
-                        [true, true, true],
-                        [false, false, false]
-                    ],
-                    [
-                        [false, false, false],
-                        [false, true, true],
-                        [false, true, true]
-                    ],
-                    [
-                        [true, true, true],
-                        [false, true, false],
-                        [false, true, false]
-                    ],
-                    [
-                        [true, true, true],
-                        [false, true, false],
-                        [false, false, false]
-                    ],
-                    [
-                        [false, true, true],
-                        [false, true, false],
-                        [false, true, false]
-                    ],
-                    [
-                        [false, false, false],
-                        [false, true, false],
-                        [false, false, false]
-                    ],
-                    [
-                        [false, false, false],
-                        [true, true, false],
-                        [false, false, false]
-                    ],
-                    [
-                        [false, false, false],
-                        [false, true, false],
-                        [false, true, false]
-                    ],
-                    [
-                        [false, false, false],
-                        [false, true, false],
-                        [false, true, true]
-                    ],
-                    [
-                        [false, false, false],
-                        [false, true, false],
-                        [true, true, false]
-                    ],
-                ];
-                for (let r = 0; r < 4; r++) {
-                    if (r > 0) {
-                        arrays = arrays.map((array) => rotateClockwise(array));
-                    }
-
-                    if (
-                        arrays.find((array) => arrayMatch(matrix, array))
-                    ) {
-                        removingPointlessNarrow++;
-                        map[y][x] = new Tile(TILES.LAND, y, x);
-                    }
-                }
-
-            }
-        }
-    }
-    console.log("\t|\tRemoved " + removingPointlessNarrow + " narrow points in the map");
-    return removingPointlessNarrow;
-}
-
 function postProccess() {
     console.log("\t|\tRemovoing duplicate routes");
     knownRoutes = Object.values(
@@ -485,7 +392,7 @@ function postProccess() {
 
             //If only has one connection
             if (totalConnections === 1) {
-                console.log("Only one connection", x, y);
+                // console.log("Only one connection", x, y);
                 //Loop around adjacent tiles
                 ['above', 'below', 'left', 'right'].some((direction) => {
                     const _adjacentTile = getTile(map, map[x][y], direction);
@@ -497,7 +404,7 @@ function postProccess() {
 
                     if (roadConnectionCount == 2 && _adjacentTile.type !== TILES.ROAD) {
                         map[_adjacentTile.coordinate.x][_adjacentTile.coordinate.y] = new Tile(TILES.ROAD, _adjacentTile.coordinate.y, _adjacentTile.coordinate.x);
-                        console.log('\t|\t', _adjacentTile.coordinate.x, _adjacentTile.coordinate.y, 'road diagonal added');
+                        // console.log('\t|\t', _adjacentTile.coordinate.x, _adjacentTile.coordinate.y, 'road diagonal added');
                         return "returning to only add one connection";
                     }
                 })
@@ -553,7 +460,7 @@ function postProccess() {
             if (
                 map[y][x] !== undefined &&
                 map[y][x].type == TILES.PLACE &&
-                roadAroundPoint(y, x) == false
+                tileAroundPoint(y, x, TILES.ROAD) == false
             ) {
                 console.log("\t|\tFound missing road at: " + map[y][x].extraInfo.properties.name);
                 let foundRoadCoord = null, radius = 1;
@@ -615,15 +522,46 @@ function postProccess() {
     console.log("\t|\tAdding water");
     fill(0, 0, TILES.WATER);
 
-
-    if (SPEED === MODE.beautiful) {
-        let narrowPoints = 1;
-
-        while (narrowPoints > 0) {
-            narrowPoints = removeNarrow();
+    console.log("\t|\tAdding Beaches");
+    for (var y = 0; y < gridSizeHeight; y++) {
+        for (var x = 0; x < gridSizeWidth; x++) {
+            if (
+                map[y][x] !== undefined &&
+                map[y][x].type == TILES.WATER &&
+                tileAroundPoint(y, x, TILES.LAND) == true
+            ) {
+                replaceAround(map, y, x, 2, TILES.WATER, TILES.BEACH);
+            }
         }
     }
 
+    for (var y = 0; y < gridSizeHeight; y++) {
+        for (var x = 0; x < gridSizeWidth; x++) {
+            if (
+                map[y][x] !== undefined &&
+                map[y][x].type == TILES.LAND &&
+                tileAroundPoint(y, x, TILES.WATER) == true
+            ) {
+                replaceAround(map, y, x, 2, TILES.WATER, TILES.BEACH);
+            }
+        }
+    }
+
+    // console.log("\t|\tSmoothing terrain to remove odd tiles");
+    // for (const terrainToSmooth of [TILES.BEACH, TILES.WATER]) {
+    //     for (var y = 0; y < gridSizeHeight; y++) {
+    //         for (var x = 0; x < gridSizeWidth; x++) {
+    //             if (
+    //                 map[y][x] !== undefined &&
+    //                 map[y][x].type == terrainToSmooth &&
+    //                 tilesNotOfSameTypeAroundPointCount(y, x) > 6
+    //             ) {
+    //                 replaceAround(map, y, x, 1, terrainToSmooth, TILES.DEBUG);
+    //             }
+    //         }
+    //     }
+
+    // }
 
     // console.log("\t|\tMapping Rivers");
     // countyRivers.elements.forEach((river) => {

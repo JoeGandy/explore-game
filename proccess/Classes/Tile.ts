@@ -26,6 +26,7 @@ export class Tile {
             case TILES.ROAD:
             case TILES.PLACE:
             case TILES.CITY_ROAD:
+            case TILES.BEACH:
                 return false;
             case TILES.LAND:
             case TILES.REMOTELAND:

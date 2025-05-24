@@ -1,45 +1,32 @@
-function getTile(map, tile, direction, mofidyX = 0 , modifyY = 0) {
-    let modifier = { x: 0, y: 0 };
 
-    switch (direction) {
-        case 'above':
-            modifier.x = -1;
-            break;
-        case 'aboveLeft':
-            modifier.x = -1;
-            modifier.y = -1;
-            break;
-        case 'aboveRight':
-            modifier.x = -1;
-            modifier.y = 1;
-            break;
-        case 'below':
-            modifier.x = 1;
-            break;
-        case 'belowLeft':
-            modifier.x = 1;
-            modifier.y = -1;
-            break;
-        case 'belowRight':
-            modifier.x = 1;
-            modifier.y = 1;
-            break;
-        case 'left':
-            modifier.y = -1;
-            break;
-        case 'right':
-            modifier.y = 1;
-            break;
+function getTileBitmask(map, tile) {
+    const directions = [
+        [-1, -1], [-1, 0], [-1, 1],
+        [ 0, 1], [ 1, 1], [ 1, 0],
+        [ 1, -1], [ 0, -1]
+    ];
+
+    let bitmask = 0;
+    if (!tile || !map[tile.coordinate.x] || map[tile.coordinate.x][tile.coordinate.y] === undefined) {
+        return bitmask;
     }
 
-    modifier.x = mofidyX + modifier.x;
-    modifier.y = modifyY + modifier.y;
+    const tileType = map[tile.coordinate.x][tile.coordinate.y].type;
 
-    if (!tile || typeof map[tile.coordinate.x + modifier.x] === 'undefined' || typeof map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y] === 'undefined') {
-        return null;
-    }
+    directions.forEach(([dx, dy], index) => {
+        const nx = tile.coordinate.x + dx;
+        const ny = tile.coordinate.y + dy;
 
-    return map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y];
+        if (
+            map[nx] !== undefined &&
+            map[nx][ny] !== undefined &&
+            map[nx][ny].type === tileType
+        ) {
+            bitmask |= (1 << index);
+        }
+    });
+
+    return bitmask;
 }
 
-module.exports = getTile;
+module.exports = { getTileBitmask };

@@ -2,6 +2,7 @@
 import map from '../assets/raw-data.json';
 import { TextStyle } from 'pixi.js'
 import { Text } from "@pixi/react";
+import { TILE_SIZE } from "../consants/dimensions";
 
 const RenderText = () => {
     const getSize = (tile) => {
@@ -23,8 +24,8 @@ const RenderText = () => {
             return <Text
                 text={tile.extraInfo?.properties?.name}
                 anchor={0.5}
-                y={tile.coordinate.x * 32}
-                x={tile.coordinate.y * 32}
+                y={tile.coordinate.x * TILE_SIZE}
+                x={tile.coordinate.y * TILE_SIZE}
                 key={`${tile.coordinate.x}.${tile.coordinate.y}-text`}
                 style={
                     new TextStyle({

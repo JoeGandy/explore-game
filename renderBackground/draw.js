@@ -3,13 +3,14 @@ const fs = require("fs");
 
 require('custom-env').env(true, "../maps");
 
+const { getTileBitmask } = require('./getTile.js');
+const { getTilemapMapping } = require('./getTilemapMapping.js');
+const { performance } = require('perf_hooks');
 const map = require("./raw-data.json");
-const globals = require("../global-constants");
-const getEdgeTile = require("./getEdgeTile");
-const waterTileDefintion = require("./tileDefinitions/water.json");
-const roadTileDefintion = require("./tileDefinitions/road.json");
-const cityRoadTileDefintion = require("./tileDefinitions/cityRoad.json");
-const remoteTileDefintion = require("./tileDefinitions/remote.json");
+const globals = require("../global-constants.js");
+const { waterTileMap } = require("./tileDefinitions/water.js");
+const landTileDefinition = require("./tileDefinitions/land.json");
+const beachTileDefinition = require("./tileDefinitions/beach.json");
 
 // Dimensions for the image
 const width = map[0].length * globals.TILE_SIZE;
@@ -30,126 +31,121 @@ const canvasHeight = (height / vPieces);
 const canvas = createCanvas(canvasWidth, canvasHeight);
 const context = canvas.getContext("2d");
 
-// const spriteMapColumns = 40;
-const spriteMapColumns = 32;
-
 context.fillStyle = "#764abc";
 context.fillRect(0, 0, canvasWidth, canvasHeight);
 
-const landIds = [0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 325, 326, 327, 328];
+let spriteMaps = {
+    "A2": {
+        path: "./spriteMaps/A2 - Terrain and Misc.png",
+        loadedImage: null,
+        columns: 102,
+    },
+    "A1": {
+        path: "./spriteMaps/A1 - Liquids And Misc.png",
+        loadedImage: null,
+        columns: 72,
+    },
+}
 
-
-function getFromArray(array) {
+function getRandomFromArray(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
-// https://www.boristhebrave.com/2021/11/14/classification-of-tilesets/
+
 function getTileXY(tile) {
-    let id = null;
+    let id = null, image = null;
 
     switch (tile.type) {
         case globals.TILES.WATER:
-            id = getEdgeTile(map, tile, waterTileDefintion);
+            id = getTilemapMapping(getTileBitmask(map, tile), waterTileMap);
+            image = "A1";
             break;
         case globals.TILES.LAND:
-            id = getFromArray(landIds);
+            id = getRandomFromArray(landTileDefinition.baseTiles);
+            image = "A2";
             break;
-        case globals.TILES.REMOTELAND:
-            id = getEdgeTile(map, tile, remoteTileDefintion);
-            break;
-        case globals.TILES.ROAD:
-            id = getEdgeTile(map, tile, roadTileDefintion,
-                (_targetTile, _tile) => ![globals.TILES.ROAD, globals.TILES.CITY_ROAD].includes(_targetTile)
-            );
-            break;
-        case globals.TILES.CITY_ROAD:
-            id = getEdgeTile(map, tile, cityRoadTileDefintion,
-                (_targetTile, _tile) => ![globals.TILES.CITY_ROAD, globals.TILES.ROAD].includes(_targetTile)
-            );
-            break;
-        case globals.TILES.PLACE:
-            switch (tile.extraInfo.properties.place) {
-                case 'hamlet':
-                    id = 201;
-                    break;
-                case 'village':
-                    id = 199;
-                    break;
-                case 'town':
-                    id = 195;
-                    break;
-                case 'city':
-                    id = 198;
-                    break;
-                case 'suburb':
-                    id = 193;
-                    break;
-            }
-            break;
-        case globals.TILES.BUILT_UP_DENSITY_1:
-            id = getFromArray([213, 2, 1, 1, 209]);
-            break;
-        case globals.TILES.BUILT_UP_DENSITY_2:
-            id = getFromArray([213, 2, 1, 1, 209]);
-            break;
-        case globals.TILES.BUILT_UP_DENSITY_3:
-            id = getFromArray([213, 212, 211, 2, 1, 209]);
-            break;
-        case globals.TILES.BUILT_UP_DENSITY_4:
-            id = getFromArray([213, 212, 211, 1, 209]);
-            break;
-        case globals.TILES.BUILT_UP_DENSITY_5:
-            id = getFromArray([213, 203, 212, 211, 208, 207, 206, 209]);
+        case globals.TILES.BEACH:
+            id = getRandomFromArray(beachTileDefinition.baseTiles);
+            image = "A2";
             break;
         default:
-            id = 704;
+            id = 7483;
+            image = "A2";
+            break;
     }
 
     return {
-        x: Math.floor(id % spriteMapColumns) * globals.TILE_SIZE,
-        y: Math.floor(id / spriteMapColumns) * globals.TILE_SIZE,
-    } //https://stackoverflow.com/questions/47951361/finding-x-y-based-off-of-index
+        image,
+        x: (id % spriteMaps[image].columns) * globals.TILE_SIZE,
+        y: Math.floor(id / spriteMaps[image].columns) * globals.TILE_SIZE,
+    }
 }
 
-loadImage("../spritemap-new-new.png").then((tileMap) => {
-    let image = 1;
+for (key of Object.keys(spriteMaps)) {
+    spriteMaps[key].loadedImage = loadImage(spriteMaps[key].path);
+}
+
+function resolveObject(obj) {
+    return Promise.all(
+        Object.entries(obj).map(async ([k, v]) => [k, await v])
+    ).then(Object.fromEntries);
+}
+
+resolveObject(spriteMaps).then(async (resolvedSpriteMaps) => {
+    let imageIndex = 1;
+
+    const tileWidth = globals.TILE_SIZE;
+    const tileHeight = globals.TILE_SIZE;
+
+    const tilesPerRow = Math.ceil(canvasWidth / tileWidth);
+    const tilesPerColumn = Math.ceil(canvasHeight / tileHeight);
+
     for (let hPiece = 0; hPiece < hPieces; hPiece++) {
         for (let vPiece = 0; vPiece < vPieces; vPiece++) {
-            for (let y = 0; y < map.length; y++) {
-                for (let x = 0; x < map[0].length; x++) {
+            const startTime = performance.now();
+
+            // Calculate visible tile range for this piece
+            const startX = hPiece * tilesPerRow;
+            const startY = vPiece * tilesPerColumn;
+            const endX = Math.min(startX + tilesPerRow, map[0].length);
+            const endY = Math.min(startY + tilesPerColumn, map.length);
+
+            for (let y = startY; y < endY; y++) {
+                for (let x = startX; x < endX; x++) {
                     const tile = map[y][x];
                     const tileXY = getTileXY(tile);
 
-                    const targetLocX = (x * globals.TILE_SIZE) - (hPiece * canvasWidth);
-                    const targetLocY = (y * globals.TILE_SIZE) - (vPiece * canvasHeight);
+                    const image = await resolvedSpriteMaps[tileXY.image].loadedImage;
 
-                    //draw the image    
+                    const targetLocX = (x * tileWidth) - (hPiece * canvasWidth);
+                    const targetLocY = (y * tileHeight) - (vPiece * canvasHeight);
+
                     context.drawImage(
-                        tileMap, // image
-                        tileXY.x, // source x
-                        tileXY.y, // source y
-                        globals.TILE_SIZE, // source width
-                        globals.TILE_SIZE, // source height
-                        targetLocX, // target x
-                        targetLocY, // target y
-                        globals.TILE_SIZE, // target width
-                        globals.TILE_SIZE, // target height
+                        image,
+                        tileXY.x,
+                        tileXY.y,
+                        tileWidth,
+                        tileHeight,
+                        targetLocX,
+                        targetLocY,
+                        tileWidth,
+                        tileHeight
                     );
                 }
             }
+
             const buffer = canvas.toBuffer("image/png");
-            console.log("writing to", `./output/background-${hPiece}-${vPiece}.png`);
-            fs.writeFileSync(`./output/background-${hPiece}-${vPiece}.png`, buffer);
-            console.log("\t|\tFile " + (image++) + " of " + (hPieces * vPieces) + " created");
-
-
+            const filePath = `./output/background-${hPiece}-${vPiece}.png`;
+            console.log("Writing to", filePath);
+            fs.writeFileSync(filePath, buffer);
+            console.log(`\t|\tFile ${imageIndex++} of ${hPieces * vPieces} created`);
+            console.log(`\tTook ${Math.round(performance.now() - startTime)} ms`);
         }
     }
 
-
-    var json = JSON.stringify({
+    // Only write JSON config once
+    const config = {
         horizontalPieces: hPieces,
-        verticalPieces: vPieces,
-    });
-    fs.writeFile('./output/background-config.json', json, 'utf8', () => { });
-
+        verticalPieces: vPieces
+    };
+    fs.writeFileSync('./output/background-config.json', JSON.stringify(config), 'utf8');
 });

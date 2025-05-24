@@ -6,11 +6,12 @@ import routes from './assets/raw-data-known-routes.json';
 import map from './assets/raw-data.json';
 import Background from "./components/background";
 import RenderText from "./components/render-text";
-import Debug from "./assets/-1.png";
-import { width, height } from "./consants/dimensions";
+import Debug from "./assets/debug24px.png";
+import { width, height, TILE_SIZE } from "./consants/dimensions";
 
 const stageWidth = 800;
 const stageHeight = 800;
+
 
 const stageOptions = {
   antialias: false,
@@ -31,8 +32,8 @@ const renderMap = (mapLight: any[][], highLightedtiles, highLightedCoords) => {
     result.push(
       <Sprite
         image={Debug}
-        y={highlightedTile.coordinate.x * 32}
-        x={highlightedTile.coordinate.y * 32}
+        y={highlightedTile.coordinate.x * TILE_SIZE}
+        x={highlightedTile.coordinate.y * TILE_SIZE}
         key={`${highlightedTile.coordinate.x}.${highlightedTile.coordinate.y}.tile`} />
     );
   });
@@ -41,34 +42,12 @@ const renderMap = (mapLight: any[][], highLightedtiles, highLightedCoords) => {
     result.push(
       <Sprite
         image={Debug}
-        y={highLightedCoord[0] * 32}
-        x={highLightedCoord[1] * 32}
+        y={highLightedCoord[0] * TILE_SIZE}
+        x={highLightedCoord[1] * TILE_SIZE}
         key={`${highLightedCoord[0]}.${highLightedCoord[1]}.coord.${i}`} />
     );
   });
 
-  // for (let y = 0; y < mapLight.length; y++) {
-  //   for (let x = 0; x < mapLight[0].length; x++) {
-  //     const cell = mapLight[y][x];
-  //     if ([0, 1, 2, 3, 4].includes(cell.type)) {
-  //       continue;
-  //     }
-
-  //     const image = Debug;
-
-  //     const texture = Texture.from(image);
-  //     texture.baseTexture.scaleMode = SCALE_MODES.NEAREST;
-
-  //     result.push(
-  //       <Sprite
-  //         texture={texture}
-  //         x={x * 32}
-  //         y={y * 32}
-  //         key={`${x}.${y}`} />
-  //     );
-
-  //   }
-  // }
   return result;
 }
 
@@ -114,28 +93,6 @@ function getTile(tile, direction) {
   return map[tile.coordinate.x + modifier.x][tile.coordinate.y + modifier.y].type;
 }
 
-
-function getTilesAround(tile, setHighLightedtiles) {
-  const aboveTile = getTile(tile, 'above');
-  const aboveLeftTile = getTile(tile, 'aboveLeft');
-  const aboveRightTile = getTile(tile, 'aboveRight');
-  const belowTile = getTile(tile, 'below');
-  const belowLeftTile = getTile(tile, 'belowLeft');
-  const belowRightTile = getTile(tile, 'belowRight');
-  const leftTile = getTile(tile, 'left');
-  const rightTile = getTile(tile, 'right');
-
-  const matrix = [
-    [aboveLeftTile === tile.type, aboveTile === tile.type, aboveRightTile === tile.type],
-    [leftTile === tile.type, true, rightTile === tile.type],
-    [belowLeftTile === tile.type, belowTile === tile.type, belowRightTile === tile.type],
-  ];
-
-  // setHighLightedtiles([aboveTile.coordinate]);
-  return matrix;
-
-}
-
 const App = () => {
   const viewportRef = useRef<Viewport>(null);
   const [highLightedCoords, setHighLightedCoords] = useState<number[][] | null>([]);
@@ -157,12 +114,12 @@ const App = () => {
     const { x, y } = coordinate;
     console.log(coordinate);
     viewport.setZoom(0.5);
-    viewport.snap(y * 32, x * 32, { removeOnComplete: true });
+    viewport.snap(y * TILE_SIZE, x * TILE_SIZE, { removeOnComplete: true });
   }, []);
 
   const onViewPortClicked = (event) => {
-    const x = Math.floor(event.world.x / 32);
-    const y = Math.floor(event.world.y / 32);
+    const x = Math.floor(event.world.x / TILE_SIZE);
+    const y = Math.floor(event.world.y / TILE_SIZE);
     const tile = map[y][x];
 
     console.log(tile);
@@ -242,7 +199,37 @@ const App = () => {
 
       return runningTotal;
     }
-    console.log(getEdgeTile(tile))
+    function getTileBitmask(map, tile) {
+        const directions = [
+            [-1, -1], [-1, 0], [-1, 1],
+            [ 0, 1], [ 1, 1], [ 1, 0],
+            [ 1, -1], [ 0, -1]
+        ];
+    
+        let bitmask = 0;
+        if (!tile || !map[tile.coordinate.x] || map[tile.coordinate.x][tile.coordinate.y] === undefined) {
+            return bitmask;
+        }
+    
+        const tileType = map[tile.coordinate.x][tile.coordinate.y].type;
+    
+        directions.forEach(([dx, dy], index) => {
+            const nx = tile.coordinate.x + dx;
+            const ny = tile.coordinate.y + dy;
+    
+            if (
+                map[nx] !== undefined &&
+                map[nx][ny] !== undefined &&
+                map[nx][ny].type === tileType
+            ) {
+                bitmask |= (1 << index);
+            }
+        });
+    
+        return bitmask;
+    }
+    
+    console.log('bitmask', getTileBitmask(map, tile));
     console.log(getTilesAround(tile));
 
     const closestRoutes = tile?.extraInfo?.closest.map(

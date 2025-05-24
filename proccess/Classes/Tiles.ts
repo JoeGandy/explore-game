@@ -4,5 +4,6 @@ export enum TILES {
     LAND = 1,
     DEBUG = -1,
     REMOTELAND = 2,
+    BEACH = 6,
     PLACE = 4,
 }

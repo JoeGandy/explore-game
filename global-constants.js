@@ -1,5 +1,5 @@
 module.exports = {
-    TILE_SIZE: 32,
+    TILE_SIZE: 24,
     BACKGROUND_PIECES_HORITZONTAL: 4,
     BACKGROUND_PIECES_VERTICAL: 4,
     TILES: {
@@ -9,6 +9,7 @@ module.exports = {
         LAND: 1,
         DEBUG: -1,
         REMOTELAND: 2,
+        BEACH: 6,
         PLACE: 4,
         BUILT_UP_DENSITY_5: 15,
         BUILT_UP_DENSITY_4: 14,
