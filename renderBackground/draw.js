@@ -8,7 +8,7 @@ const { getTilemapMapping } = require('./getTilemapMapping.js');
 const { performance } = require('perf_hooks');
 const map = require("./raw-data.json");
 const globals = require("../global-constants.js");
-const { waterTileMap } = require("./tileDefinitions/water.js");
+const { waterTileMap, waterSpriteMap } = require("./tileDefinitions/water.js");
 const landTileDefinition = require("./tileDefinitions/land.json");
 const beachTileDefinition = require("./tileDefinitions/beach.json");
 
@@ -35,6 +35,7 @@ context.fillStyle = "#764abc";
 context.fillRect(0, 0, canvasWidth, canvasHeight);
 
 let spriteMaps = {
+    "water-beach": waterSpriteMap,
     "A2": {
         path: "./spriteMaps/A2 - Terrain and Misc.png",
         loadedImage: null,
@@ -57,7 +58,7 @@ function getTileXY(tile) {
     switch (tile.type) {
         case globals.TILES.WATER:
             id = getTilemapMapping(getTileBitmask(map, tile), waterTileMap);
-            image = "A1";
+            image = "water-beach";
             break;
         case globals.TILES.LAND:
             id = getRandomFromArray(landTileDefinition.baseTiles);

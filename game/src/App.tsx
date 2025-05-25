@@ -230,7 +230,8 @@ const App = () => {
     }
     
     console.log('bitmask', getTileBitmask(map, tile));
-    console.log(getTilesAround(tile));
+    console.log('type',tile);
+    // console.log(getTilesAround(tile));
 
     const closestRoutes = tile?.extraInfo?.closest.map(
       (closest) => {

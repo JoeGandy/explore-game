@@ -27,7 +27,9 @@ const BitmaskConst = {
     TJUNCTION_RIGHT: "TJUNCTION_RIGHT",
 
     // Crossroads
-    CROSS: "CROSS"
+    CROSS: "CROSS",
+
+    HIDE: "HIDE"
 };
 
 module.exports = { BitmaskConst };

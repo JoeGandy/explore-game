@@ -117,6 +117,34 @@ function fillSquareAround(map: Tile[][], _y, _x, width, type = TILES.LAND) {
     }
     return map;
 }
+
+function fillCircleAround(map: Tile[][], _y: number, _x: number, radius: number, type = TILES.LAND) {
+    for (let x = _x - radius; x <= _x + radius; x++) {
+        for (let y = _y - radius; y <= _y + radius; y++) {
+            if (!validCoord(y, x)) continue;
+            if (x === _x && y === _y) continue;
+
+            const dx = x - _x;
+            const dy = y - _y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance <= radius && map[y][x]?.allowDrawOver()) {
+                map[y][x] = new Tile(type, x, y);
+            }
+        }
+    }
+    return map;
+}
+
+function fillAround(map: Tile[][], _y, _x, width, type = TILES.LAND, circle = true) {
+    let shapeFunction = fillSquareAround;
+    if (circle) {
+        shapeFunction = fillCircleAround;
+    }
+
+    return shapeFunction(map, _y, _x, width, type);
+}
+
 function replaceAround(map: Tile[][], _y, _x, width, fromType = TILES.WATER, toType = TILES.BEACH) {
     for (var x = (_x - width); x < (_x + width); x++) {
         for (var y = (_y - width); y < (_y + width); y++) {
@@ -136,7 +164,7 @@ locations.reverse().forEach((place, i) => {
     const x = placeCoords[LAT_INDEX] + PADDING;
 
     map[y][x] = new Tile(TILES.PLACE, x, y, place);
-    fillSquareAround(map, y, x, AREA_TO_FILL_AROUND_PLACE);
+    fillAround(map, y, x, AREA_TO_FILL_AROUND_PLACE);
 });
 
 function getDensity(place = undefined) {
@@ -368,7 +396,7 @@ function postProccess() {
 
             if (map[y][x]?.allowDrawOver()) {
                 map[y][x] = new Tile(TILES.ROAD, x, y);
-                map = fillSquareAround(map, y, x, AREA_TO_FILL_AROUND_PATH);
+                map = fillAround(map, y, x, AREA_TO_FILL_AROUND_PATH);
             }
         })
     })
@@ -482,7 +510,7 @@ function postProccess() {
                     if (validCoord(y, x) && map[_y][_x]?.allowDrawOver()) {
                         map[_y][_x] = new Tile(TILES.ROAD, _y, _x);
                     }
-                    map = fillSquareAround(map, _y, _x, AREA_TO_FILL_AROUND_PATH);
+                    map = fillAround(map, _y, _x, AREA_TO_FILL_AROUND_PATH);
                 }
             }
         }
@@ -499,9 +527,9 @@ function postProccess() {
                 const tile = map[y][x];
                 const densityDefiniton = getDensity(tile.extraInfo);
 
-                map = fillSquareAround(map, y, x, densityDefiniton.radius + 4);
-                map = fillSquareAround(map, y, x, densityDefiniton.radius + 2, getDensity().tile);
-                map = fillSquareAround(map, y, x, densityDefiniton.radius, densityDefiniton.tile);
+                map = fillAround(map, y, x, densityDefiniton.radius + 4);
+                map = fillAround(map, y, x, densityDefiniton.radius + 2, getDensity().tile);
+                map = fillAround(map, y, x, densityDefiniton.radius, densityDefiniton.tile);
                 map = upgradeRoads(map, y, x, densityDefiniton.radius);
             }
         }
@@ -576,7 +604,7 @@ function postProccess() {
     //     if(validCoord(y, x)){
     //         if(map[y][x].type === TILES.LAND || map[y][x].type === TILES.REMOTELAND){
     //             map[y][x] = new Tile(TILES.WATER, x, y);
-    //             map = fillSquareAround(map, y, x, 2, TILES.WATER);
+    //             map = fillAround(map, y, x, 2, TILES.WATER);
     //         }
     //     }
     // });
